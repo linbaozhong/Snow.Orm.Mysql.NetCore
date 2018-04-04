@@ -10,10 +10,7 @@ namespace Snow.Orm
     {
         public bool Insert(T bean, ref long id)
         {
-            if (bean == null || bean.Count == 0)
-            {
-                throw new Exception("bean 不能为 NULL");
-            }
+            if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
             List<string> _Fields = new List<string>();
             List<string> _Values = new List<string>();
             var _Params = new List<DbParameter>();
@@ -36,14 +33,8 @@ namespace Snow.Orm
                 }
                 return false;
             }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
-                if (_ShowSQL) ShowSQLString(sql, _Params);
-            }
+            catch { throw; }
+            finally { if (_ShowSQL) ShowSQLString(sql, _Params); }
         }
         public bool Insert(T bean)
         {
@@ -53,10 +44,7 @@ namespace Snow.Orm
 
         public bool Update(long id, T bean)
         {
-            if (bean == null || bean.Count == 0)
-            {
-                throw new Exception("bean 不能为 NULL");
-            }
+            if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
             var _SetColumns = new List<string>();
             var _Params = new List<DbParameter>();
             foreach (var item in bean)
@@ -71,10 +59,7 @@ namespace Snow.Orm
             var sql = "UPDATE " + TableString + " SET " + string.Join(",", _SetColumns) + $" WHERE {DB.GetName("ID")}={id};";
             if (_ShowSQL) ShowSQLString(sql, _Params);
 
-            if (_SetColumns.Count == 0)
-            {
-                throw new Exception("SQL语法错误");
-            }
+            if (_SetColumns.Count == 0) { throw new Exception("SQL语法错误"); }
             try
             {
                 if (Db.Write(sql, _Params))
@@ -84,18 +69,54 @@ namespace Snow.Orm
                 }
                 return false;
             }
-            catch
-            {
-                throw;
-            }
+            catch { throw; }
         }
+        /// <summary>
+        /// UPDATE
+        /// </summary>
+        /// <param name="id">主键值</param>
+        /// <param name="setString">SET字符串,"a=? and b=?"</param>
+        /// <param name="args">参数值</param>
+        /// <returns></returns>
+        public bool Update(long id, string setString, params object[] args)
+        {
+            if (string.IsNullOrWhiteSpace(setString)) { throw new Exception("数据库操作命令不能为空"); }
+            var sql = new StringBuilder(200);
+            sql.Append("UPDATE " + TableString);
+            if (!setString.Trim().StartsWith("SET ", StringComparison.CurrentCultureIgnoreCase)) sql.Append(" SET ");
+            var where = $" WHERE {DB.GetName("ID")}={id};";
+            var len = args.Length;
+            if (len == 0)
+            {
+                var _sql = sql + setString + where;
+                if (_ShowSQL) ShowSQLString(_sql);
+                return Db.Write(_sql);
+            }
 
+            var Params = new List<DbParameter>();
+            var i = 0;
+            string col = string.Empty;
+            foreach (var c in setString)
+            {
+                if (c == '?' && i < len)
+                {
+                    col = "_cols_" + i;
+                    sql.Append(DB._ParameterPrefix + col);
+                    Params.Add(DB.GetParam(col, args[i]));
+                    i++;
+                    continue;
+                }
+                sql.Append(c);
+            }
+            sql.Append(where);
+            try { return Db.Write(sql.ToString(), Params); }
+            catch (Exception) { throw; }
+            finally { if (_ShowSQL) ShowSQLString(sql.ToString(), Params); }
+        }
         public bool Update<V>(long id, string col, V val)
         {
-            if (val == null || string.IsNullOrWhiteSpace(col))
-            {
-                throw new Exception("必要的参数不能为 NULL");
-            }
+            if (val == null || string.IsNullOrWhiteSpace(col)) { throw new Exception("必要的参数不能为 NULL"); }
+
             DbParameter _Param = null;
             string sql = null;
             if (_ColumnDictionary.Contains(col.ToLower()))
@@ -104,10 +125,7 @@ namespace Snow.Orm
                 sql = "UPDATE " + TableString + " SET " + DB.GetCondition(col) + $" WHERE {DB.GetName("ID")}={id};";
                 if (_ShowSQL) ShowSQLString(sql, _Param);
             }
-            else
-            {
-                throw new Exception(col + "列不存在");
-            }
+            else { throw new Exception(col + "列不存在"); }
 
             try
             {
@@ -118,17 +136,11 @@ namespace Snow.Orm
                 }
                 return false;
             }
-            catch
-            {
-                throw;
-            }
+            catch { throw; }
         }
         public bool Update(Sql cond)
         {
-            if (cond == null)
-            {
-                throw new Exception("cond 不能为 NULL");
-            }
+            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
 
             try
             {
@@ -147,14 +159,8 @@ namespace Snow.Orm
                 }
                 return false;
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                cond.Dispose();
-            }
+            catch (Exception e) { throw e; }
+            finally { cond.Dispose(); }
         }
 
         public bool Delete(long id)
