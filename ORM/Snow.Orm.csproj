@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="DAL\**" />
+    <Compile Remove="OrmTest\**" />
+    <Compile Remove="Test\**" />
+    <Compile Remove="wwwroot\**" />
+    <EmbeddedResource Remove="DAL\**" />
+    <EmbeddedResource Remove="OrmTest\**" />
+    <EmbeddedResource Remove="Test\**" />
+    <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="DAL\**" />
+    <None Remove="OrmTest\**" />
+    <None Remove="Test\**" />
+    <None Remove="wwwroot\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Column.cs" />
+    <Compile Remove="Dal.cs" />
+    <Compile Remove="dbs.cs" />
+    <Compile Remove="_Cols.cs" />
+    <Compile Remove="_Condition.cs" />
+    <Compile Remove="_Dal.cs" />
+    <Compile Remove="_GroupBy.cs" />
+    <Compile Remove="_Join.cs" />
+    <Compile Remove="_OrderBy.cs" />
+    <Compile Remove="_Page.cs" />
+    <Compile Remove="_Set.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="MySql.Data" Version="6.10.5" />
+  </ItemGroup>
+
+</Project>

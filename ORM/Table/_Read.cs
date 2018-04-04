@@ -1,0 +1,108 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Linq;
+using System.Text;
+
+namespace Snow.Orm
+{
+    public partial class Table<T>
+    {
+        object GetSingle(string sql, List<DbParameter> Params)
+        {
+            if (_ShowSQL) ShowSQLString(sql, Params);
+            return Db.ReadSingle(sql, Params);
+        }
+
+        T Get(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
+        {
+            if (_ShowSQL) ShowSQLString(sql, Params);
+            using (var dr = Db.Read(sql, Params))
+            {
+                if (dr.Read())
+                {
+                    var _obj = new T() as BaseEntity;
+                    var i = 0;
+                    if (cols == null || cols.Count() == 0) cols = _Columns;
+                    foreach (var item in cols)
+                    {
+                        _obj[item] = dr.IsDBNull(i) ? null : dr[i];
+                        i++;
+                    }
+                    return _obj as T;
+                }
+            }
+            return null;
+        }
+
+        List<T> Gets(StringBuilder sql, List<DbParameter> Params, IEnumerable<string> cols = null)
+        {
+            if (_ShowSQL) ShowSQLString(sql.ToString(), Params);
+            using (var dr = Db.Read(sql.ToString(), Params))
+            {
+                if (dr.HasRows)
+                {
+                    var _list = new List<T>();
+                    if (cols == null || cols.Count() == 0) cols = _Columns;
+                    while (dr.Read())
+                    {
+                        var _obj = new T() as BaseEntity;
+                        var i = 0;
+                        foreach (var item in cols)
+                        {
+                            _obj[item] = dr.IsDBNull(i) ? null : dr[i];
+                            i++;
+                        }
+                        _list.Add(_obj as T);
+                    }
+                    return _list;
+                }
+            }
+            return null;
+        }
+
+        long[] GetIds(StringBuilder sql, List<DbParameter> Params)
+        {
+            if (_ShowSQL) ShowSQLString(sql.ToString(), Params);
+            using (var dr = Db.Read(sql.ToString(), Params))
+            {
+                if (dr.HasRows)
+                {
+                    var _ids = new List<long>();
+                    while (dr.Read())
+                    {
+                        _ids.Add(dr[0].ToLong());
+                    }
+                    return _ids.ToArray();
+                }
+            }
+            return null;
+        }
+
+        bool Exist(StringBuilder sql, List<DbParameter> Params)
+        {
+            if (_ShowSQL) ShowSQLString(sql.ToString(), Params);
+            using (var dr = Db.Read(sql.ToString(), Params))
+            {
+                if (dr.Read())
+                {
+                    return !dr.IsDBNull(0);
+                }
+            }
+            return false;
+        }
+        int Count(StringBuilder sql, List<DbParameter> Params)
+        {
+            if (_ShowSQL) ShowSQLString(sql.ToString(), Params);
+            using (var dr = Db.Read(sql.ToString(), Params))
+            {
+                if (dr.Read())
+                {
+                    return dr[0].ToInt();
+                }
+            }
+            return 0;
+        }
+
+    }
+}

@@ -1,0 +1,14 @@
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.deps.json
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.runtimeconfig.json
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.runtimeconfig.dev.json
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.dll
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.pdb
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.csprojResolveAssemblyReference.cache
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.csproj.CoreCompileInputs.cache
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.AssemblyInfoInputs.cache
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.AssemblyInfo.cs
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.dll
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.pdb
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Snow.Orm.dll
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Snow.Orm.pdb
+C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.csproj.CopyComplete

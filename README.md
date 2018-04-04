@@ -1,0 +1,1 @@
+# Snow.Orm.Mysql.NetCore
