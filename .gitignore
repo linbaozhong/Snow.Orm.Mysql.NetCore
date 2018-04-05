@@ -2,3 +2,8 @@
 *.ide
 .vs/Snow.Orm/v15/.suo
 .vs/Snow.Orm/v15/Server/sqlite3/db.lock
+Example/obj/project.assets.json
+Example/obj/Example.csproj.nuget.g.targets
+Example/obj/Example.csproj.nuget.g.props
+Example/obj/Example.csproj.nuget.cache
+Example/obj/Debug/netcoreapp2.0/Example.csproj.CoreCompileInputs.cache
