@@ -244,6 +244,10 @@ namespace Snow.Orm
         {
             RowCache.Remove(id);
         }
+        public void RemoveCache(long[] ids)
+        {
+            RowCache.Remove(ids);
+        }
         public void RemoveListCache(T bean, string orderby = null, uint count = 1000)
         {
             ListCache.Remove(CombineCacheKey(bean, orderby, count));
