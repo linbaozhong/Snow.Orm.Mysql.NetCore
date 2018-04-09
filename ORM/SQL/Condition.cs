@@ -75,9 +75,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql Eq<T>(string col, T val)
+        public Sql Eq<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.And, Op.Eq);
+            GetCondition(col, val, AndOr.And, Op.Eq, isFunc);
             return this;
         }
         /// <summary>
@@ -87,9 +87,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql OrEq<T>(string col, T val)
+        public Sql OrEq<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.Or, Op.Eq);
+            GetCondition(col, val, AndOr.Or, Op.Eq, isFunc);
             return this;
         }
         /// <summary>
@@ -99,9 +99,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql UnEq<T>(string col, T val)
+        public Sql UnEq<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.And, Op.UnE);
+            GetCondition(col, val, AndOr.And, Op.UnE, isFunc);
             return this;
         }
         /// <summary>
@@ -111,9 +111,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql OrUnEq<T>(string col, T val)
+        public Sql OrUnEq<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.Or, Op.UnE);
+            GetCondition(col, val, AndOr.Or, Op.UnE, isFunc);
             return this;
         }
 
@@ -127,9 +127,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql Gt<T>(string col, T val)
+        public Sql Gt<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.And, Op.Gt);
+            GetCondition(col, val, AndOr.And, Op.Gt, isFunc);
             return this;
         }
         /// <summary>
@@ -139,9 +139,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql OrGt<T>(string col, T val)
+        public Sql OrGt<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.Or, Op.Gt);
+            GetCondition(col, val, AndOr.Or, Op.Gt, isFunc);
             return this;
         }
         /// <summary>
@@ -151,9 +151,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql Gte<T>(string col, T val)
+        public Sql Gte<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.And, Op.GtE);
+            GetCondition(col, val, AndOr.And, Op.GtE, isFunc);
             return this;
         }
         /// <summary>
@@ -163,9 +163,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql OrGte<T>(string col, T val)
+        public Sql OrGte<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.Or, Op.GtE);
+            GetCondition(col, val, AndOr.Or, Op.GtE, isFunc);
             return this;
         }
         #endregion
@@ -179,9 +179,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql Lt<T>(string col, T val)
+        public Sql Lt<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.And, Op.Lt);
+            GetCondition(col, val, AndOr.And, Op.Lt, isFunc);
             return this;
         }
         /// <summary>
@@ -191,9 +191,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql OrLt<T>(string col, T val)
+        public Sql OrLt<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.Or, Op.Lt);
+            GetCondition(col, val, AndOr.Or, Op.Lt, isFunc);
             return this;
         }
         /// <summary>
@@ -203,9 +203,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql Lte<T>(string col, T val)
+        public Sql Lte<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.And, Op.LtE);
+            GetCondition(col, val, AndOr.And, Op.LtE, isFunc);
             return this;
         }
         /// <summary>
@@ -215,9 +215,9 @@ namespace Snow.Orm
         /// <param name="col">列名</param>
         /// <param name="val">值</param>
         /// <returns></returns>
-        public Sql OrLte<T>(string col, T val)
+        public Sql OrLte<T>(string col, T val, bool isFunc = false)
         {
-            GetCondition(col, val, AndOr.Or, Op.LtE);
+            GetCondition(col, val, AndOr.Or, Op.LtE, isFunc);
             return this;
         }
         #endregion
@@ -353,7 +353,7 @@ namespace Snow.Orm
 
         #region 条件
 
-        void GetCondition<T>(string col, T val, string andor = AndOr.And, string op = Op.Eq)
+        void GetCondition<T>(string col, T val, string andor = AndOr.And, string op = Op.Eq, bool isFunc = false)
         {
             if (IsKeyCondition) return;
             if (string.IsNullOrWhiteSpace(col)) return;
@@ -361,8 +361,15 @@ namespace Snow.Orm
             {
                 OtherCondition.Append(andor);
             }
-            OtherCondition.Append(DB.GetCondition(col, op));
-            Params.Add(DB.GetParam(col, val));
+            if (isFunc)
+            {
+                OtherCondition.Append(DB.SetColumnFunc(col, val.ToString()));
+            }
+            else
+            {
+                OtherCondition.Append(DB.GetCondition(col, op));
+                Params.Add(DB.GetParam(col, val));
+            }
         }
         void GetNullCondition(string col, string andor = AndOr.And, bool isnull = true)
         {

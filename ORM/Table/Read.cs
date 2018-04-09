@@ -36,6 +36,12 @@ namespace Snow.Orm
             }
             return Get(row, args);
         }
+        public T GetCache(Sql cond, params string[] args)
+        {
+            var ids = GetCacheIds(cond);
+            if (ids == null) return null;
+            return GetCache(ids[0], args);
+        }
         /// <summary>
         /// 读取实时数据对象
         /// </summary>
@@ -135,6 +141,20 @@ namespace Snow.Orm
             {
                 cond.Dispose();
             }
+        }
+        public List<T> GetCaches(Sql cond, params string[] args)
+        {
+            var ids = GetCacheIds(cond);
+            if (ids == null) return null;
+            var _list = new List<T>();
+            T _obj = null;
+            foreach (var id in ids)
+            {
+                _obj = GetCache(id, args);
+                if (_obj == null) continue;
+                _list.Add(_obj);
+            }
+            return _list;
         }
         /// <summary>
         /// 读取前size个ID
@@ -262,7 +282,7 @@ namespace Snow.Orm
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public bool Exist(int id)
+        public bool Exist(long id)
         {
             if (GetCache(id) == null)
             {
