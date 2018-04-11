@@ -12,3 +12,17 @@ C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.pdb
 C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Snow.Orm.dll
 C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Snow.Orm.pdb
 C:\Snow\Net\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.csproj.CopyComplete
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.deps.json
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.runtimeconfig.json
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.runtimeconfig.dev.json
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.dll
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Example.pdb
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Snow.Orm.dll
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Snow.Orm.pdb
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.csprojResolveAssemblyReference.cache
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.csproj.CoreCompileInputs.cache
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.AssemblyInfoInputs.cache
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.AssemblyInfo.cs
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.csproj.CopyComplete
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.dll
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.pdb

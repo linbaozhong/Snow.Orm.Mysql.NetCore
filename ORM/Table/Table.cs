@@ -9,6 +9,8 @@ namespace Snow.Orm
 {
     public partial class Table<T> where T : BaseEntity, new()
     {
+        log4net.ILog Log;
+
         DB Db;
         static string SelectColumnString;
 
@@ -67,8 +69,9 @@ namespace Snow.Orm
         /// <param name="Params"></param>
         void ShowSQLString(string sql, List<DbParameter> Params)
         {
-            Utils.Log.Debug($"------------{DateTime.Now}--------------");
-            Utils.Log.Debug(sql);
+            if (Log == null) return;
+            Log.Debug($"------------{DateTime.Now}--------------");
+            Log.Debug(sql);
             if (Params != null)
             {
                 StringBuilder mess = new StringBuilder(300);
@@ -83,14 +86,15 @@ namespace Snow.Orm
                     if (s != null && s.Length > 1000) mess.AppendLine(s.Substring(0, 1000));
                     else mess.AppendLine(s);
                 }
-                Utils.Log.Debug(mess.ToString());
+                Log.Debug(mess.ToString());
             }
             _ShowSQL = false;
         }
         void ShowSQLString(string sql, DbParameter Param = null)
         {
-            Utils.Log.Debug($"------------{DateTime.Now}--------------");
-            Utils.Log.Debug(sql);
+            if (Log == null) return;
+            Log.Debug($"------------{DateTime.Now}--------------");
+            Log.Debug(sql);
             if (Param != null)
             {
                 StringBuilder mess = new StringBuilder(300);
@@ -100,7 +104,7 @@ namespace Snow.Orm
                 if (s != null && s.Length > 1000) mess.AppendLine(s.Substring(0, 1000));
                 else mess.AppendLine(s);
 
-                Utils.Log.Debug(mess.ToString());
+                Log.Debug(mess.ToString());
             }
             _ShowSQL = false;
         }
@@ -111,8 +115,9 @@ namespace Snow.Orm
         private static HashSet<string> OmitProperties = new HashSet<string>(
             new string[] { "Item", "Comparer", "Keys", "Values", "Count" }, StringComparer.OrdinalIgnoreCase);
 
-        public Table(DB db, TableTypes type = TableTypes.Default)
+        public Table(DB db, TableTypes type = TableTypes.Default, log4net.ILog log = null)
         {
+            Log = log;
             Db = db;
             Type objType = typeof(T);
             Name = objType.Name;

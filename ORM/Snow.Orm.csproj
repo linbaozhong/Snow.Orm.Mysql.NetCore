@@ -23,6 +23,7 @@
     <Compile Remove="Column.cs" />
     <Compile Remove="Dal.cs" />
     <Compile Remove="dbs.cs" />
+    <Compile Remove="Utils.cs" />
     <Compile Remove="_Cols.cs" />
     <Compile Remove="_Condition.cs" />
     <Compile Remove="_Dal.cs" />
