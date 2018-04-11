@@ -5433,12 +5433,15 @@
   },
   "project": {
     "version": "1.0.0",
+    "restoreSettings": {
+      "hideWarningsAndErrors": true
+    },
     "restore": {
-      "projectUniqueName": "D:\\Snow\\Snow.Orm.Mysql.NetCore\\Example\\Example.csproj",
+      "projectUniqueName": "D:\\Snow.Orm.Mysql.NetCore\\Example\\Example.csproj",
       "projectName": "Example",
-      "projectPath": "D:\\Snow\\Snow.Orm.Mysql.NetCore\\Example\\Example.csproj",
+      "projectPath": "D:\\Snow.Orm.Mysql.NetCore\\Example\\Example.csproj",
       "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-      "outputPath": "D:\\Snow\\Snow.Orm.Mysql.NetCore\\Example\\obj\\",
+      "outputPath": "D:\\Snow.Orm.Mysql.NetCore\\Example\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -5457,8 +5460,8 @@
       "frameworks": {
         "netcoreapp2.0": {
           "projectReferences": {
-            "D:\\Snow\\Snow.Orm.Mysql.NetCore\\ORM\\Snow.Orm.csproj": {
-              "projectPath": "D:\\Snow\\Snow.Orm.Mysql.NetCore\\ORM\\Snow.Orm.csproj"
+            "D:\\Snow.Orm.Mysql.NetCore\\ORM\\Snow.Orm.csproj": {
+              "projectPath": "D:\\Snow.Orm.Mysql.NetCore\\ORM\\Snow.Orm.csproj"
             }
           }
         }

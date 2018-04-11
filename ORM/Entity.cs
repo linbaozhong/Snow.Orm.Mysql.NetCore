@@ -99,8 +99,14 @@ namespace Snow.Orm
             object _val;
             if (TryGetValue(name, out _val))
             {
+                if (_val == null) return default(T);
                 try { return (T)Convert.ChangeType(_val, typeof(T)); }
-                catch { Utils.Log.Error("类型转换失败"); }
+                catch
+                {
+                    Utils.Log.Error(_val);
+                    Utils.Log.Error(_val.GetType());
+                }
+                //return (T)_val;
             }
             return default(T);
         }

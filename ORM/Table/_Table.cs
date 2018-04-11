@@ -91,7 +91,19 @@ namespace Snow.Orm
             ck.Append("\n");
             ck.Append(cond.GetPageString());
             ck.Append("\n");
-
+            if (cond.Params != null)
+            {
+                string s = null;
+                foreach (DbParameter p in cond.Params)
+                {
+                    if (p == null || p.Value == null) continue;
+                    s = p.Value.ToString();
+                    ck.Append(p.ParameterName);
+                    ck.Append("=");
+                    if (s != null && s.Length > 3000) ck.AppendLine(s.Substring(0, 3000));
+                    else ck.AppendLine(s);
+                }
+            }
             return ck.ToString();
         }
     }

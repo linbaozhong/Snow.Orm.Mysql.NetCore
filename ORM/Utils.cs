@@ -8,11 +8,12 @@
         /// <summary>
         /// 日志
         /// </summary>
-		public readonly static log4net.ILog Log = log4net.LogManager.GetLogger("adeway", "");
+		public readonly static log4net.ILog Log;
 
 		static Utils()
 		{
-            log4net.Config.XmlConfigurator.Configure(log4net.LogManager.GetRepository("adeway"));
+            log4net.Config.XmlConfigurator.Configure();
+            Log = log4net.LogManager.GetLogger("adeway");
         }
     }
 }
