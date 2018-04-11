@@ -16,7 +16,8 @@ namespace Snow.Orm
     /// </summary>
     public abstract class BaseEntity : Dictionary<string, object>
     {
-        public string TableName;
+        protected string TableName;
+
         /// <summary>
         /// 实体抽象类
         /// </summary>
@@ -108,8 +109,6 @@ namespace Snow.Orm
         [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            Utils.Log.Debug("xiluehua");
-            //base.GetObjectData(info, context);
             foreach (var item in this)
             {
                 Utils.Log.Debug(item.Key);
