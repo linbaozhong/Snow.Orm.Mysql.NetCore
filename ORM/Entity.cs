@@ -16,7 +16,8 @@ namespace Snow.Orm
     /// </summary>
     public abstract class BaseEntity : Dictionary<string, object>
     {
-        public string TableName;
+        protected string TableName;
+
         /// <summary>
         /// 实体抽象类
         /// </summary>
@@ -99,13 +100,9 @@ namespace Snow.Orm
             if (TryGetValue(name, out _val))
             {
                 if (_val == null) return default(T);
-                try { return (T)Convert.ChangeType(_val, typeof(T)); }
-                catch
-                {
-                    Utils.Log.Error(_val);
-                    Utils.Log.Error(_val.GetType());
-                }
-                //return (T)_val;
+                return (T)_val;
+                //try { return (T)Convert.ChangeType(_val, typeof(T)); }
+                //catch (Exception e) { throw e; }
             }
             return default(T);
         }
@@ -114,11 +111,8 @@ namespace Snow.Orm
         [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            Utils.Log.Debug("xiluehua");
-            //base.GetObjectData(info, context);
             foreach (var item in this)
             {
-                Utils.Log.Debug(item.Key);
                 if (item.Value is DateTime)
                 {
                     info.AddValue(item.Key, item.Value.ToString());

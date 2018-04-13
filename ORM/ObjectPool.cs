@@ -161,40 +161,40 @@ namespace Snow.Orm
         /// 可从多个线程同时使用。  
         /// </summary>  
         ConcurrentBag<T> buffer;
-        Func<T> creatFunc;
+        Func<string, T> creatFunc;
         //Func<DB, T> creatFunc;
         Action<T> resetFunc;
         public int capacity { get; private set; }
         public int count { get { return buffer.Count(); } }
 
-        public ObjectPool(Func<T> creatFunc, Action<T> resetFunc, int capacity)
-        {
-            this.buffer = new ConcurrentBag<T>();
-            this.creatFunc = creatFunc;
-            this.resetFunc = resetFunc;
-            this.capacity = capacity;
-        }
-        //public ObjectPool(Func<DB, T> creatFunc, Action<T> resetFunc, int capacity)
+        //public ObjectPool(Func<T> creatFunc, Action<T> resetFunc, int capacity)
         //{
         //    this.buffer = new ConcurrentBag<T>();
         //    this.creatFunc = creatFunc;
         //    this.resetFunc = resetFunc;
-
         //    this.capacity = capacity;
         //}
+        public ObjectPool(Func<string, T> creatFunc, Action<T> resetFunc, int capacity)
+        {
+            this.buffer = new ConcurrentBag<T>();
+            this.creatFunc = creatFunc;
+            this.resetFunc = resetFunc;
+
+            this.capacity = capacity;
+        }
 
         /// <summary>  
         /// 申请对象，若有从池中移除并返回取出的对象  
         /// 若没有则创建新的对象，并返回该对象  
         /// </summary>  
         /// <returns></returns>  
-        public T GetObject(DB db = null)
+        public T GetObject(string TableName = null)
         {
             var obj = default(T);
             if (buffer.TryTake(out obj))
                 return obj;
             else
-                return creatFunc();
+                return creatFunc(TableName);
         }
         public void PutObject(T obj)
         {

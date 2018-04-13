@@ -11,7 +11,7 @@ namespace Snow.Orm
     /// </summary>
     public partial class Sql : IDisposable
     {
-        static ObjectPool<Sql> pool = new ObjectPool<Sql>(() =>
+        static ObjectPool<Sql> pool = new ObjectPool<Sql>((s) =>
         {
             return new Sql();
         }, x => { x.ResetFunc(); }, 100);

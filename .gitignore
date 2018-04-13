@@ -7,3 +7,5 @@ Example/obj/Example.csproj.nuget.g.targets
 Example/obj/Example.csproj.nuget.g.props
 Example/obj/Example.csproj.nuget.cache
 Example/obj/Debug/netcoreapp2.0/Example.csproj.CoreCompileInputs.cache
+*.ide-shm
+*.ide-wal
