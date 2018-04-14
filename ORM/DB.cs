@@ -12,6 +12,8 @@ namespace Snow.Orm
     /// </summary>
 	public sealed partial class DB
     {
+        public log4net.ILog Log;
+
         /// <summary>
         /// 
         /// </summary>
@@ -109,7 +111,7 @@ namespace Snow.Orm
         /// <param name="connstr">数据库连接字符串</param>
         /// <param name="timeout">超时</param>
         /// <param name="isdebug">是否调试</param>
-		public DB(string connstr, uint timeout = 0, bool isdebug = false)
+		public DB(string connstr, uint timeout = 0, log4net.ILog log = null, bool isdebug = false)
         {
             if (connstr == null || connstr.Length < 10)
             {
@@ -117,6 +119,7 @@ namespace Snow.Orm
             }
             ReadConnStr = connstr;
             WriteConnStr = connstr;
+            Log = log;
             IsDebug = isdebug;
             if (timeout > 0) this.TimeOut = timeout;
         }
@@ -126,7 +129,7 @@ namespace Snow.Orm
         /// <param name="readconnstr"></param>
         /// <param name="writeconnstr"></param>
         /// <param name="timeout"></param>
-		public DB(string readconnstr, string writeconnstr, uint timeout = 0, bool isdebug = false)
+		public DB(string readconnstr, string writeconnstr, uint timeout = 0, log4net.ILog log = null, bool isdebug = false)
         {
             if (readconnstr == null || readconnstr.Length < 10)
             {
@@ -134,6 +137,7 @@ namespace Snow.Orm
             }
             ReadConnStr = readconnstr;
             WriteConnStr = writeconnstr;
+            Log = log;
             IsDebug = isdebug;
             if (this.WriteConnStr == null || this.WriteConnStr.Length < 3) this.WriteConnStr = this.ReadConnStr;
             if (timeout > 0) this.TimeOut = timeout;
@@ -588,28 +592,12 @@ namespace Snow.Orm
         public bool Exec(string sqlString, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlString)) { throw new Exception("数据库操作命令不能为空"); }
-            var len = args.Length;
-            if (len == 0) return Write(sqlString);
-
-            var sql = new StringBuilder(200);
             var Params = new List<DbParameter>();
-            var i = 0;
-            string col = string.Empty;
-            foreach (var c in sqlString)
-            {
-                if (c == '?' && i < len)
-                {
-                    col = "_cols_" + i;
-                    sql.Append(DB._ParameterPrefix + col);
-                    Params.Add(DB.GetParam(col, args[i]));
-                    i++;
-                    continue;
-                }
-                sql.Append(c);
-            }
+            var sql = GetRawSql(sqlString, ref Params, args);
+
             try
             {
-                return Write(sql.ToString(), Params);
+                return Write(sql, Params);
             }
             catch (Exception)
             {
@@ -617,7 +605,7 @@ namespace Snow.Orm
             }
             finally
             {
-                if (IsDebug) ShowSqlString(sql.ToString(), Params);
+                if (IsDebug) ShowSqlString(sql, Params);
             }
         }
         /// <summary>
@@ -632,12 +620,36 @@ namespace Snow.Orm
             {
                 throw new Exception("数据库查询字符串不能为空");
             }
+
+            var Params = new List<DbParameter>();
+            var sql = GetRawSql(sqlString,ref Params, args);
+            try
+            {
+                return Query(sql, Params);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (IsDebug) ShowSqlString(sql, Params);
+            }
+        }
+        /// <summary>
+        /// 原生sql
+        /// </summary>
+        /// <param name="sqlString"></param>
+        /// <param name="dbParams"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static string GetRawSql(string sqlString,ref List<DbParameter> dbParams, params object[] args)
+        {
             var len = args.Length;
             if (len == 0)
-                return Query(sqlString);
+                return sqlString;
 
             var sql = new StringBuilder(200);
-            var Params = new List<DbParameter>();
             var i = 0;
             string col = string.Empty;
             foreach (var c in sqlString)
@@ -646,29 +658,23 @@ namespace Snow.Orm
                 {
                     col = "_cols_" + i;
                     sql.Append(DB._ParameterPrefix + col);
-                    Params.Add(DB.GetParam(col, args[i]));
+                    dbParams.Add(DB.GetParam(col, args[i]));
                     i++;
                     continue;
                 }
                 sql.Append(c);
             }
-            try
-            {
-                return Query(sql.ToString(), Params);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-                if (IsDebug) ShowSqlString(sql.ToString(), Params);
-            }
+            return sql.ToString();
         }
-
-        void ShowSqlString(string sql, List<DbParameter> parame = null)
+        public void ShowSqlString(string sql, List<DbParameter> parames)
         {
-            Console.WriteLine(Debug(sql, parame));
+            if (Log == null) return;
+            Log.Debug(Debug(sql, parames));
+        }
+        public void ShowSqlString(string sql, DbParameter parame = null)
+        {
+            if (Log == null) return;
+            Log.Debug(Debug(sql, parame));
         }
     }
 }

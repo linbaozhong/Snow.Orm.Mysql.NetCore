@@ -34,7 +34,7 @@ namespace Snow.Orm
                 return false;
             }
             catch { throw; }
-            finally { if (_ShowSQL) ShowSQLString(sql, _Params); }
+            finally { if (Db.IsDebug) Db.ShowSqlString(sql, _Params); }
         }
         public bool Insert(T bean)
         {
@@ -57,7 +57,7 @@ namespace Snow.Orm
                 }
             }
             var sql = "UPDATE " + TableString + " SET " + string.Join(",", _SetColumns) + $" WHERE {DB.GetName("ID")}={id};";
-            if (_ShowSQL) ShowSQLString(sql, _Params);
+            if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
 
             if (_SetColumns.Count == 0) { throw new Exception("SQL语法错误"); }
             try
@@ -84,34 +84,13 @@ namespace Snow.Orm
             var sql = new StringBuilder(200);
             sql.Append("UPDATE " + TableString);
             if (!setString.Trim().StartsWith("SET ", StringComparison.CurrentCultureIgnoreCase)) sql.Append(" SET ");
-            var where = $" WHERE {DB.GetName("ID")}={id};";
-            var len = args.Length;
-            if (len == 0)
-            {
-                var _sql = sql + setString + where;
-                if (_ShowSQL) ShowSQLString(_sql);
-                return Db.Write(_sql);
-            }
 
             var Params = new List<DbParameter>();
-            var i = 0;
-            string col = string.Empty;
-            foreach (var c in setString)
-            {
-                if (c == '?' && i < len)
-                {
-                    col = "_cols_" + i;
-                    sql.Append(DB._ParameterPrefix + col);
-                    Params.Add(DB.GetParam(col, args[i]));
-                    i++;
-                    continue;
-                }
-                sql.Append(c);
-            }
-            sql.Append(where);
+            sql.Append(DB.GetRawSql(setString, ref Params, args));
+            sql.Append($" WHERE {DB.GetName("ID")}={id};");
             try { return Db.Write(sql.ToString(), Params); }
             catch (Exception) { throw; }
-            finally { if (_ShowSQL) ShowSQLString(sql.ToString(), Params); }
+            finally { if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params); }
         }
         public bool Update<V>(long id, string col, V val)
         {
@@ -123,7 +102,7 @@ namespace Snow.Orm
             {
                 _Param = DB.GetParam(col, val);
                 sql = "UPDATE " + TableString + " SET " + DB.GetCondition(col) + $" WHERE {DB.GetName("ID")}={id};";
-                if (_ShowSQL) ShowSQLString(sql, _Param);
+                if (Db.IsDebug) Db.ShowSqlString(sql, _Param);
             }
             else { throw new Exception(col + "列不存在"); }
 
@@ -146,7 +125,7 @@ namespace Snow.Orm
             {
                 var _setColumn = cond.GetSetColumn();
                 var sql = "UPDATE " + TableString + " SET " + _setColumn + cond.GetWhereString() + ";";
-                if (_ShowSQL) ShowSQLString(sql, cond.Params);
+                if (Db.IsDebug) Db.ShowSqlString(sql, cond.Params);
 
                 if (_setColumn == "")
                 {
@@ -166,7 +145,7 @@ namespace Snow.Orm
         public bool Delete(long id)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")}={id};";
-            if (_ShowSQL) ShowSQLString(sql);
+            if (Db.IsDebug) Db.ShowSqlString(sql);
             try
             {
                 if (Db.Write(sql))
@@ -188,7 +167,7 @@ namespace Snow.Orm
         public bool Delete(IEnumerable<long> ids)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")} in ({string.Join(",", ids)});";
-            if (_ShowSQL) ShowSQLString(sql);
+            if (Db.IsDebug) Db.ShowSqlString(sql);
             try
             {
                 if (Db.Write(sql))
@@ -218,7 +197,7 @@ namespace Snow.Orm
             try
             {
                 var sql = "DELETE FROM " + TableString + cond.GetWhereString() + ";";
-                if (_ShowSQL) ShowSQLString(sql, cond.Params);
+                if (Db.IsDebug) Db.ShowSqlString(sql, cond.Params);
                 if (Db.Write(sql))
                 {
                     Task.Run(() =>

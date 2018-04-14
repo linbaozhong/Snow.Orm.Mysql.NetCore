@@ -22,28 +22,7 @@ namespace Snow.Orm
             {
                 throw new Exception("数据库操作命令不能为空");
             }
-            var len = args.Length;
-            if (len == 0)
-            {
-                OtherCondition.Append(sqlString);
-                return this;
-            }
-
-            var sql = new StringBuilder(200);
-            var i = 0;
-            string col = string.Empty;
-            foreach (var c in sqlString)
-            {
-                if (c == '?' && i < len)
-                {
-                    col = "_cols_" + i;
-                    sql.Append(DB._ParameterPrefix + col);
-                    Params.Add(DB.GetParam(col, args[i]));
-                    i++;
-                    continue;
-                }
-                sql.Append(c);
-            }
+            var sql = DB.GetRawSql(sqlString, ref Params, args);
             OtherCondition.Append(sql);
             return this;
         }

@@ -11,7 +11,7 @@ namespace Snow.Orm
     /// </summary>
     public partial class Sql : IDisposable
     {
-        static ObjectPool<Sql> pool = new ObjectPool<Sql>((s) =>
+        static ObjectPool<Sql> pool = new ObjectPool<Sql>(() =>
         {
             return new Sql();
         }, x => { x.ResetFunc(); }, 100);
@@ -51,12 +51,11 @@ namespace Snow.Orm
         {
             get { return pool.GetObject(); }
         }
-
         ~Sql()
         {
             this.Dispose(false);
         }
-
+        DB Db;
         /// <summary>
         /// 主键条件
         /// </summary>

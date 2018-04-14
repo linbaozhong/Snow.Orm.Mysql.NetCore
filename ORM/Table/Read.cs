@@ -142,6 +142,25 @@ namespace Snow.Orm
                 cond.Dispose();
             }
         }
+        public List<T> Gets(string sqlString, params object[] args)
+        {
+            if (string.IsNullOrWhiteSpace(sqlString))
+            {
+                throw new Exception("数据库查询字符串不能为空");
+            }
+
+            var Params = new List<DbParameter>();
+            var sql = DB.GetRawSql(sqlString, ref Params, args);
+            try
+            {
+                return Gets(sql, Params);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public List<T> GetCaches(Sql cond, params string[] args)
         {
             var ids = GetCacheIds(cond);

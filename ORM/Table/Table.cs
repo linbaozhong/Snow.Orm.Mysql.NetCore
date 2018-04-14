@@ -9,15 +9,12 @@ namespace Snow.Orm
 {
     public partial class Table<T> where T : BaseEntity, new()
     {
-        log4net.ILog Log;
-
         DB Db;
         static string SelectColumnString;
 
         Cache<long, T> RowCache;
         Cache<string, long[]> ListCache;
 
-        bool _ShowSQL = false;
         /// <summary>
         /// (属性名-列)字典
         /// </summary>
@@ -54,61 +51,6 @@ namespace Snow.Orm
         /// </summary>
         public string JsonName { private set; get; }
 
-        public Table<T> ShowSQL
-        {
-            get
-            {
-                _ShowSQL = true;
-                return this;
-            }
-        }
-        /// <summary>
-        /// 控制台打印SQL命令
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <param name="Params"></param>
-        void ShowSQLString(string sql, List<DbParameter> Params)
-        {
-            if (Log == null) return;
-            Log.Debug($"------------{DateTime.Now}--------------");
-            Log.Debug(sql);
-            if (Params != null)
-            {
-                StringBuilder mess = new StringBuilder(300);
-                string s = null;
-
-                foreach (DbParameter p in Params)
-                {
-                    if (p == null || p.Value == null) continue;
-                    s = p.Value.ToString();
-                    mess.Append(p.ParameterName);
-                    mess.Append(": ");
-                    if (s != null && s.Length > 1000) mess.AppendLine(s.Substring(0, 1000));
-                    else mess.AppendLine(s);
-                }
-                Log.Debug(mess.ToString());
-            }
-            _ShowSQL = false;
-        }
-        void ShowSQLString(string sql, DbParameter Param = null)
-        {
-            if (Log == null) return;
-            Log.Debug($"------------{DateTime.Now}--------------");
-            Log.Debug(sql);
-            if (Param != null)
-            {
-                StringBuilder mess = new StringBuilder(300);
-                string s = Param.Value.ToString();
-                mess.Append(Param.ParameterName);
-                mess.Append(": ");
-                if (s != null && s.Length > 1000) mess.AppendLine(s.Substring(0, 1000));
-                else mess.AppendLine(s);
-
-                Log.Debug(mess.ToString());
-            }
-            _ShowSQL = false;
-        }
-
         /// <summary>
         /// 固有公共属性(继承类必须排除)
         /// </summary>
@@ -117,7 +59,6 @@ namespace Snow.Orm
 
         public Table(DB db, TableTypes type = TableTypes.Default, log4net.ILog log = null)
         {
-            Log = log;
             Db = db;
             Type objType = typeof(T);
             Name = objType.Name;

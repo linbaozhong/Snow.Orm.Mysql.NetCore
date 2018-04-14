@@ -11,5 +11,7 @@ namespace Example.Mds
         public Users() : base(Table.Name) { ID = 0; }
 
         public int ID { set { Set(value); } get { return Get<int>(); } }
+        public long Mobile { set { Set(value); } get { return Get<long>(); } }
+        public DateTime CreateTime { set { Set(value); } get { return Get<DateTime>(); } }
     }
 }
