@@ -191,6 +191,16 @@ namespace Snow.Orm
         public long[] GetIds(T bean, string orderby = null, uint count = 1000, CacheTypes from = CacheTypes.From)
         {
             if (bean == null) { throw new Exception("bean 不能为 NULL"); }
+            if (from == CacheTypes.None)
+            {
+                var _Params = new List<DbParameter>();
+                var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, GetWhereCondition(bean, _Params)));
+                if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
+                if (count > 0) _sql.Append(" LIMIT " + count);
+
+                return GetIds(_sql, _Params);
+            }
+
             long[] ids = null;
             string ck = CombineCacheKey(bean, orderby, count);
             if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
@@ -207,11 +217,9 @@ namespace Snow.Orm
 
                 ids = GetIds(_sql, _Params);
 
-                if (from != CacheTypes.None)
-                {
-                    if (ids == null) ListCache.Add(ck, null, 5);
-                    else ListCache.Add(ck, ids);
-                }
+                if (ids == null) ListCache.Add(ck, null, 5);
+                else ListCache.Add(ck, ids);
+
                 from = CacheTypes.From;
             }
             return ids;
@@ -226,6 +234,11 @@ namespace Snow.Orm
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             try
             {
+                if (from == CacheTypes.None)
+                {
+                    return GetIds(cond);
+                }
+
                 long[] ids = null;
                 string ck = CombineCacheKey(cond);
                 if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
@@ -237,13 +250,11 @@ namespace Snow.Orm
 
                     ids = GetIds(cond);
 
-                    if (from != CacheTypes.None)
-                    {
-                        if (ids == null)
-                            ListCache.Add(ck, null, 5);
-                        else
-                            ListCache.Add(ck, ids);
-                    }
+                    if (ids == null)
+                        ListCache.Add(ck, null, 5);
+                    else
+                        ListCache.Add(ck, ids);
+
                     from = CacheTypes.From;
                 }
                 return ids;
