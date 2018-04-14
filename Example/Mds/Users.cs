@@ -8,6 +8,8 @@ namespace Example.Mds
     public class Users : BaseEntity
     {
         public static Table<Users> Table = new Table<Users>(dbs.Db, TableTypes.Default);
-        public Users() : base(Table.Name) {}
+        public Users() : base(Table.Name) { ID = 0; }
+
+        public int ID { set { Set(value); } get { return Get<int>(); } }
     }
 }
