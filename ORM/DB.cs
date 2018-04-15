@@ -594,19 +594,9 @@ namespace Snow.Orm
             if (string.IsNullOrWhiteSpace(sqlString)) { throw new Exception("数据库操作命令不能为空"); }
             var Params = new List<DbParameter>();
             var sql = GetRawSql(sqlString, ref Params, args);
-
-            try
-            {
-                return Write(sql, Params);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-                if (IsDebug) ShowSqlString(sql, Params);
-            }
+            try { return Write(sql, Params); }
+            catch (Exception) { throw; }
+            finally { if (IsDebug) ShowSqlString(sql, Params); }
         }
         /// <summary>
         /// 执行原生数据库查询,并返回DataTable
@@ -616,34 +606,22 @@ namespace Snow.Orm
         /// <returns></returns>
         public DataTable Query(string sqlString, params object[] args)
         {
-            if (string.IsNullOrWhiteSpace(sqlString))
-            {
-                throw new Exception("数据库查询字符串不能为空");
-            }
-
+            if (string.IsNullOrWhiteSpace(sqlString)) { throw new Exception("数据库查询字符串不能为空"); }
             var Params = new List<DbParameter>();
-            var sql = GetRawSql(sqlString,ref Params, args);
-            try
-            {
-                return Query(sql, Params);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-                if (IsDebug) ShowSqlString(sql, Params);
-            }
+            var sql = GetRawSql(sqlString, ref Params, args);
+            try { return Query(sql, Params); }
+            catch (Exception) { throw; }
+            finally { if (IsDebug) ShowSqlString(sql, Params); }
         }
         /// <summary>
-        /// 原生sql
+        /// 原生sql命令
+        /// 例如：例如：select * from users where age>=? and sex=?
         /// </summary>
-        /// <param name="sqlString"></param>
-        /// <param name="dbParams"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static string GetRawSql(string sqlString,ref List<DbParameter> dbParams, params object[] args)
+        /// <param name="sqlString">例如：select * from users where age>=? and sex=?</param>
+        /// <param name="dbParams">返回的 List<DbParameter></param>
+        /// <param name="args">查询条件值,和sql字符串中的？号对应</param>
+        /// <returns>sql字符串</returns>
+        public static string GetRawSql(string sqlString, ref List<DbParameter> dbParams, params object[] args)
         {
             var len = args.Length;
             if (len == 0)

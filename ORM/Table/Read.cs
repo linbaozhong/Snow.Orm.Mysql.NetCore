@@ -68,7 +68,6 @@ namespace Snow.Orm
 
             return Get(_sql, _Params);
         }
-
         public T Get(Sql cond)
         {
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
@@ -86,6 +85,32 @@ namespace Snow.Orm
                 cond.Dispose();
             }
         }
+        /// <summary>
+        /// 原生SQL方式读取实时数据对象
+        /// 例如：select * from users where id=?
+        /// </summary>
+        /// <param name="sqlString">原生sql字符串</param>
+        /// <param name="args">查询条件值,和sql字符串中的？号对应</param>
+        /// <returns></returns>
+        public T Get(string sqlString, params object[] args)
+        {
+            if (string.IsNullOrWhiteSpace(sqlString))
+            {
+                throw new Exception("数据库查询字符串不能为空");
+            }
+
+            var Params = new List<DbParameter>();
+            var sql = DB.GetRawSql(sqlString, ref Params, args);
+            try
+            {
+                return Get(sql, Params);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public object GetSingle(Sql cond)
         {
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
@@ -142,6 +167,13 @@ namespace Snow.Orm
                 cond.Dispose();
             }
         }
+        /// <summary>
+        /// 原生SQL方式读取实时数据对象列表
+        /// 例如：select * from users where age>=? and sex=?
+        /// </summary>
+        /// <param name="sqlString">原生sql字符串</param>
+        /// <param name="args">查询条件值,和sql字符串中的？号对应</param>
+        /// <returns></returns>
         public List<T> Gets(string sqlString, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlString))
