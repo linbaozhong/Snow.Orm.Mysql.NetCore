@@ -119,6 +119,7 @@ namespace Snow.Orm
             }
             ReadConnStr = connstr;
             WriteConnStr = connstr;
+
             Log = log;
             IsDebug = isdebug;
             if (timeout > 0) this.TimeOut = timeout;
