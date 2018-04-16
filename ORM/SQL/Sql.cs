@@ -55,7 +55,6 @@ namespace Snow.Orm
         {
             this.Dispose(false);
         }
-        DB Db;
         /// <summary>
         /// 主键条件
         /// </summary>

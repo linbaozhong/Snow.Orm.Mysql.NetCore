@@ -27,7 +27,7 @@ namespace Snow.Orm
                 if (RowCache.Get(id, ref row)) return Get(row, args);
 
                 var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, " WHERE ", DB.GetName("id"), "=", id, " limit 1;");
-                row = Get(_sql, null);
+                row = Get(_sql, args);
 
                 if (row == null)
                     RowCache.Add(id, null, 5);

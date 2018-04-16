@@ -15,18 +15,18 @@ namespace Snow.Orm
         Cache<long, T> RowCache;
         Cache<string, long[]> ListCache;
 
-        /// <summary>
-        /// (属性名-列)字典
-        /// </summary>
-        public Dictionary<string, string> Columns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        /// <summary>
-        /// (列名-属性名)字典
-        /// </summary>
-        public Dictionary<string, string> Propertys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        /// <summary>
-        /// 主键字典
-        /// </summary>
-        public List<string> PrimaryKey = new List<string>();
+        ///// <summary>
+        ///// (属性名-列)字典
+        ///// </summary>
+        //public Dictionary<string, string> Columns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        ///// <summary>
+        ///// (列名-属性名)字典
+        ///// </summary>
+        //public Dictionary<string, string> Propertys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        ///// <summary>
+        ///// 主键字典
+        ///// </summary>
+        //public List<string> PrimaryKey = new List<string>();
 
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Snow.Orm
         private static HashSet<string> OmitProperties = new HashSet<string>(
             new string[] { "Item", "Comparer", "Keys", "Values", "Count" }, StringComparer.OrdinalIgnoreCase);
 
-        public Table(DB db, TableTypes type = TableTypes.Default, log4net.ILog log = null)
+        public Table(DB db, TableTypes type = TableTypes.Default)
         {
             Db = db;
             Type objType = typeof(T);
@@ -124,11 +124,6 @@ namespace Snow.Orm
                     break;
             }
         }
-
-        public static bool Exec()
-        {
-            return true;
-        }
     }
 
     /// <summary>
@@ -168,66 +163,4 @@ namespace Snow.Orm
         /// </summary>
         Small = 5
     }
-    //public sealed partial class DB
-    //{
-    //    /// <summary>
-    //    /// 固有公共属性(继承类必须排除)
-    //    /// </summary>
-    //    private static HashSet<string> OmitProperties = new HashSet<string>(
-    //        new string[] { "Item", "Comparer", "Keys", "Values", "Count" }, StringComparer.OrdinalIgnoreCase);
-
-    //    //public static ConcurrentDictionary<int, Table<Object>> Tables = new ConcurrentDictionary<int, Table<Object>>();
-
-    //    //public static int InitTables<T>() where T : class, new()
-    //    //{
-    //    //    Type objType = typeof(T);
-    //    //    var className = objType.Name;
-    //    //    //取类上的自定义特性
-    //    //    object objAttr = objType.GetCustomAttribute(typeof(OrmTableAttribute), true);
-    //    //    string tableName = string.Empty;
-
-    //    //    if (objAttr != null)
-    //    //    {
-    //    //        tableName = (objAttr as OrmTableAttribute).Table;
-    //    //    }
-
-    //    //    var table = new Table<Object>(string.IsNullOrEmpty(tableName) ? className : tableName);
-
-    //    //    string _propName, _colName;
-    //    //    OrmColumnAttribute attr;
-    //    //    var _properties = objType.GetProperties();
-    //    //    //遍历全部公共属性
-    //    //    foreach (PropertyInfo propInfo in _properties)
-    //    //    {
-    //    //        _propName = propInfo.Name;
-    //    //        // 忽略固有公共属性
-    //    //        if (OmitProperties.Contains(_propName)) continue;
-
-    //    //        // 取属性上的自定义特性
-    //    //        objAttr = propInfo.GetCustomAttribute(typeof(OrmColumnAttribute), false);
-    //    //        if (objAttr != null)
-    //    //        {
-    //    //            attr = objAttr as OrmColumnAttribute;
-
-    //    //            _colName = string.IsNullOrWhiteSpace(attr.Column) ? _propName : attr.Column;
-    //    //            table.Propertys.Add(_colName, _propName); //列名
-    //    //            table.Columns.Add(_propName, _colName);
-    //    //            // 记录主键
-    //    //            if (attr.IsKey)
-    //    //                table.PrimaryKey.Add(_propName);
-
-    //    //        }
-    //    //        else
-    //    //        {
-    //    //            _colName = _propName;
-    //    //            table.Propertys.Add(_colName, _propName); //列名
-    //    //            table.Columns.Add(_propName, _colName);
-    //    //        }
-    //    //    }
-    //    //    var index = DB.Tables.Count;
-    //    //    DB.Tables.AddOrUpdate(index, table, (s, t) => { return table; });
-
-    //    //    return index;
-    //    //}
-    //}
 }

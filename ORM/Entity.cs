@@ -100,9 +100,9 @@ namespace Snow.Orm
             if (TryGetValue(name, out _val))
             {
                 if (_val == null) return default(T);
-                return (T)_val;
-                //try { return (T)Convert.ChangeType(_val, typeof(T)); }
-                //catch (Exception e) { throw e; }
+                //return (T)_val;
+                try { return (T)Convert.ChangeType(_val, typeof(T)); }
+                catch (Exception e) { throw e; }
             }
             return default(T);
         }
