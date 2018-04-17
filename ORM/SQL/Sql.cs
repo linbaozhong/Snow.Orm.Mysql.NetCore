@@ -14,9 +14,25 @@ namespace Snow.Orm
         static ObjectPool<Sql> pool = new ObjectPool<Sql>(() =>
         {
             return new Sql();
-        }, x => { x.ResetFunc(); }, 100);
-
-        void ResetFunc()
+        }, x =>
+        {
+            //x.IDCondition.Clear();
+            //x.OtherCondition.Clear();
+            //x.Params.Clear();
+            //x.IsKeyCondition = false;
+            //x.OtherCondition.Clear();
+            //x.ShowSQL = false;
+            //x._Columns.Clear();
+            //x._GroupBy = string.Empty;
+            //x._Having = string.Empty;
+            //x._Join.Clear();
+            //x._OmitColumns.Clear();
+            //x._OrderBy.Clear();
+            //x._SetColumns.Clear();
+            //Array.Clear(x._Page, 0, x._Page.Length);
+            x.ResetAction();
+        }, 100);
+        public void ResetAction()
         {
             IDCondition.Clear();
             OtherCondition.Clear();
@@ -32,6 +48,7 @@ namespace Snow.Orm
             _OrderBy.Clear();
             _SetColumns.Clear();
             Array.Clear(_Page, 0, _Page.Length);
+
         }
         public void Dispose()
         {
@@ -43,18 +60,20 @@ namespace Snow.Orm
         {
             if (disposing)
             {
+                ResetAction();
                 pool.PutObject(this);
             }
         }
 
         public static Sql Factory
         {
-            get { return pool.GetObject(); }
+            get
+            {
+                //return pool.GetObject();
+                return new Sql();
+            }
         }
-        ~Sql()
-        {
-            this.Dispose(false);
-        }
+
         /// <summary>
         /// 主键条件
         /// </summary>

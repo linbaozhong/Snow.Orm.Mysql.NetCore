@@ -11,7 +11,7 @@ namespace Snow.Orm
 
         public void ShowSQLString()
         {
-            ShowSQLString(this.OtherCondition.ToString(), this.Params);
+            ShowSQLString(OtherCondition.ToString(), Params);
         }
         /// <summary>
         /// 控制台打印SQL命令

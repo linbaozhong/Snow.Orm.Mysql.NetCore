@@ -161,7 +161,6 @@ namespace Snow.Orm
         /// 可从多个线程同时使用。  
         /// </summary>  
         ConcurrentBag<T> buffer;
-        //Func<DB, T> creatFunc;
         Func<T> creatFunc;
         Action<T> resetFunc;
         public int capacity { get; private set; }
@@ -174,14 +173,6 @@ namespace Snow.Orm
             this.resetFunc = resetFunc;
             this.capacity = capacity;
         }
-        //public ObjectPool(Func<DB, T> creatFunc, Action<T> resetFunc, int capacity)
-        //{
-        //    this.buffer = new ConcurrentBag<T>();
-        //    this.creatFunc = creatFunc;
-        //    this.resetFunc = resetFunc;
-
-        //    this.capacity = capacity;
-        //}
 
         /// <summary>  
         /// 申请对象，若有从池中移除并返回取出的对象  
@@ -192,7 +183,9 @@ namespace Snow.Orm
         {
             var obj = default(T);
             if (buffer.TryTake(out obj))
+            {
                 return obj;
+            }
             else
                 return creatFunc();
         }

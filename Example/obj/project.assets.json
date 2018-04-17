@@ -39,6 +39,15 @@
           "lib/netstandard1.3/log4net.dll": {}
         }
       },
+      "Microsoft.Extensions.ObjectPool/2.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll": {}
+        }
+      },
       "Microsoft.NETCore.App/2.0.0": {
         "type": "package",
         "dependencies": {
@@ -1564,6 +1573,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v2.0",
         "dependencies": {
+          "Microsoft.Extensions.ObjectPool": "2.0.0",
           "MySql.Data": "6.10.5",
           "log4net": "2.0.8"
         },
@@ -1597,6 +1607,17 @@
         "lib/netstandard1.3/log4net.dll",
         "log4net.2.0.8.nupkg.sha512",
         "log4net.nuspec"
+      ]
+    },
+    "Microsoft.Extensions.ObjectPool/2.0.0": {
+      "sha512": "drOmgNZCJiNEqFM/TvyqwtogS8wqoWGQCW5KB/CVGKL6VXHw8OOMdaHyspp8HPstP9UDnrnuq+8eaCaAcQg6tA==",
+      "type": "package",
+      "path": "microsoft.extensions.objectpool/2.0.0",
+      "files": [
+        "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.xml",
+        "microsoft.extensions.objectpool.2.0.0.nupkg.sha512",
+        "microsoft.extensions.objectpool.nuspec"
       ]
     },
     "Microsoft.NETCore.App/2.0.0": {
@@ -5433,12 +5454,15 @@
   },
   "project": {
     "version": "1.0.0",
+    "restoreSettings": {
+      "hideWarningsAndErrors": true
+    },
     "restore": {
-      "projectUniqueName": "D:\\Snow\\Snow.Orm.Mysql.NetCore\\Example\\Example.csproj",
+      "projectUniqueName": "D:\\Snow.Orm.Mysql.NetCore\\Example\\Example.csproj",
       "projectName": "Example",
-      "projectPath": "D:\\Snow\\Snow.Orm.Mysql.NetCore\\Example\\Example.csproj",
+      "projectPath": "D:\\Snow.Orm.Mysql.NetCore\\Example\\Example.csproj",
       "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-      "outputPath": "D:\\Snow\\Snow.Orm.Mysql.NetCore\\Example\\obj\\",
+      "outputPath": "D:\\Snow.Orm.Mysql.NetCore\\Example\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -5457,8 +5481,8 @@
       "frameworks": {
         "netcoreapp2.0": {
           "projectReferences": {
-            "D:\\Snow\\Snow.Orm.Mysql.NetCore\\ORM\\Snow.Orm.csproj": {
-              "projectPath": "D:\\Snow\\Snow.Orm.Mysql.NetCore\\ORM\\Snow.Orm.csproj"
+            "D:\\Snow.Orm.Mysql.NetCore\\ORM\\Snow.Orm.csproj": {
+              "projectPath": "D:\\Snow.Orm.Mysql.NetCore\\ORM\\Snow.Orm.csproj"
             }
           }
         }
