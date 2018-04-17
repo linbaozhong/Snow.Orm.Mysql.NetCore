@@ -16,52 +16,51 @@ namespace Snow.Orm
             return new Sql();
         }, x =>
         {
-            //x.IDCondition.Clear();
-            //x.OtherCondition.Clear();
-            //x.Params.Clear();
-            //x.IsKeyCondition = false;
-            //x.OtherCondition.Clear();
-            //x.ShowSQL = false;
-            //x._Columns.Clear();
-            //x._GroupBy = string.Empty;
-            //x._Having = string.Empty;
-            //x._Join.Clear();
-            //x._OmitColumns.Clear();
-            //x._OrderBy.Clear();
-            //x._SetColumns.Clear();
-            //Array.Clear(x._Page, 0, x._Page.Length);
-            x.ResetAction();
+            x._Columns.Clear();
+            x._GroupBy = string.Empty;
+            x._Having = string.Empty;
+            x._Join.Clear();
+            x._OmitColumns.Clear();
+            x._OrderBy.Clear();
+            x._SetColumns.Clear();
+            Array.Clear(x._Page, 0, x._Page.Length);
+            x.IDCondition.Clear();
+            x.OtherCondition.Clear();
+            x.IsKeyCondition = false;
+            x.OtherCondition.Clear();
+            x.Params.Clear();
+            //x.ResetAction();
         }, 100);
-        public void ResetAction()
-        {
-            IDCondition.Clear();
-            OtherCondition.Clear();
-            Params.Clear();
-            IsKeyCondition = false;
-            OtherCondition.Clear();
-            ShowSQL = false;
-            _Columns.Clear();
-            _GroupBy = string.Empty;
-            _Having = string.Empty;
-            _Join.Clear();
-            _OmitColumns.Clear();
-            _OrderBy.Clear();
-            _SetColumns.Clear();
-            Array.Clear(_Page, 0, _Page.Length);
 
-        }
+        //public void ResetAction()
+        //{
+        //    _Columns.Clear();
+        //    _GroupBy = string.Empty;
+        //    _Having = string.Empty;
+        //    _Join.Clear();
+        //    _OmitColumns.Clear();
+        //    _OrderBy.Clear();
+        //    _SetColumns.Clear();
+        //    Array.Clear(_Page, 0, _Page.Length);
+        //    IDCondition.Clear();
+        //    OtherCondition.Clear();
+        //    IsKeyCondition = false;
+        //    OtherCondition.Clear();
+        //    ShowSQL = false;
+        //    Params.Clear();
+        //}
         public void Dispose()
         {
             this.Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                ResetAction();
-                pool.PutObject(this);
+                this.Disposed = true;
+                if (pool.PutObject(this))
+                    GC.SuppressFinalize(this);
             }
         }
 
@@ -69,11 +68,13 @@ namespace Snow.Orm
         {
             get
             {
-                //return pool.GetObject();
-                return new Sql();
+                var _sql = pool.GetObject();
+                _sql.Disposed = false;
+                return _sql;
+                //return new Sql();
             }
         }
-
+        public bool Disposed { set; get; } = false;
         /// <summary>
         /// 主键条件
         /// </summary>

@@ -7,8 +7,6 @@ namespace Snow.Orm
 {
     public partial class Sql
     {
-        protected bool ShowSQL = false;
-
         public void ShowSQLString()
         {
             ShowSQLString(OtherCondition.ToString(), Params);

@@ -26,3 +26,4 @@ D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.AssemblyI
 D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.csproj.CopyComplete
 D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.dll
 D:\Snow\Snow.Orm.Mysql.NetCore\Example\obj\Debug\netcoreapp2.0\Example.pdb
+D:\Snow\Snow.Orm.Mysql.NetCore\Example\bin\netcoreapp2.0\Config\log4net.config

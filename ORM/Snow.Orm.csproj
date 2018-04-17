@@ -23,6 +23,7 @@
     <Compile Remove="Column.cs" />
     <Compile Remove="Dal.cs" />
     <Compile Remove="dbs.cs" />
+    <Compile Remove="SQL\Debug.cs" />
     <Compile Remove="Utils.cs" />
     <Compile Remove="_Cols.cs" />
     <Compile Remove="_Condition.cs" />
@@ -41,7 +42,6 @@
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="2.0.0" />
     <PackageReference Include="MySql.Data" Version="6.10.5" />
   </ItemGroup>
 

@@ -138,8 +138,8 @@ namespace Snow.Orm
                 }
                 return false;
             }
-            catch (Exception e) { throw e; }
-            finally { cond.Dispose(); }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
         }
 
         public bool Delete(long id)
@@ -209,14 +209,8 @@ namespace Snow.Orm
                 }
                 return false;
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                cond.Dispose();
-            }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
         }
 
         public void RemoveCache(long id)

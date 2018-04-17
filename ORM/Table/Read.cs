@@ -76,14 +76,8 @@ namespace Snow.Orm
                 var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, cond.GetWhereString(), " limit 1;");
                 return Get(_sql, cond.Params);
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                cond.Dispose();
-            }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
         }
         /// <summary>
         /// 原生SQL方式读取实时数据对象
@@ -119,14 +113,8 @@ namespace Snow.Orm
                 var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, cond.GetWhereString(), " limit 1;");
                 return GetSingle(_sql, cond.Params);
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                cond.Dispose();
-            }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
         }
 
         /// <summary>
@@ -158,14 +146,8 @@ namespace Snow.Orm
 
                 return Gets(_sql, cond.Params, cond.Columns);
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                cond.Dispose();
-            }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
         }
         /// <summary>
         /// 原生SQL方式读取实时数据对象列表
@@ -187,10 +169,7 @@ namespace Snow.Orm
             {
                 return Gets(sql, Params);
             }
-            catch (Exception)
-            {
-                throw;
-            }
+            catch { throw; }
         }
 
         public List<T> GetCaches(Sql cond, params string[] args)
@@ -223,14 +202,8 @@ namespace Snow.Orm
 
                 return GetIds(_sql, cond.Params);
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                cond.Dispose();
-            }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
         }
         /// <summary>
         /// 读取前size个ID
@@ -310,14 +283,8 @@ namespace Snow.Orm
                 }
                 return ids;
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                cond.Dispose();
-            }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
         }
 
         /// <summary>
@@ -335,14 +302,8 @@ namespace Snow.Orm
                 _sql.Append(cond.GetPageString());
                 return Exist(_sql, cond.Params);
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                cond.Dispose();
-            }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
         }
         /// <summary>
         /// 是否存在
@@ -373,14 +334,8 @@ namespace Snow.Orm
 
                 return Count(_sql, cond.Params);
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                cond.Dispose();
-            }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
         }
     }
 

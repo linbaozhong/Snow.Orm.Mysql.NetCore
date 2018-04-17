@@ -181,7 +181,7 @@ namespace Snow.Orm
         /// <returns></returns>  
         public T GetObject()
         {
-            var obj = default(T);
+            T obj;
             if (buffer.TryTake(out obj))
             {
                 return obj;
@@ -189,14 +189,15 @@ namespace Snow.Orm
             else
                 return creatFunc();
         }
-        public void PutObject(T obj)
+        public bool PutObject(T obj)
         {
             if (count >= capacity)
             {
-                return;
+                return false;
             }
             resetFunc.Invoke(obj);
             buffer.Add(obj);
+            return true;
         }
     }
 }

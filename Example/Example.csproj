@@ -18,4 +18,10 @@
     <ProjectReference Include="..\ORM\Snow.Orm.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Config\log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
