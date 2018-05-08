@@ -10,13 +10,13 @@ namespace Snow.Orm
     {
         object GetSingle(string sql, List<DbParameter> Params)
         {
-            if (Db.IsDebug) Db.ShowSqlString(sql, Params);
+            //if (Db.IsDebug) Db.ShowSqlString(sql, Params);
             return Db.ReadSingle(sql, Params);
         }
 
         T Get(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
         {
-            if (Db.IsDebug) Db.ShowSqlString(sql, Params);
+            //if (Db.IsDebug) Db.ShowSqlString(sql, Params);
             using (var dr = Db.Read(sql, Params))
             {
                 if (dr.Read())
@@ -40,7 +40,7 @@ namespace Snow.Orm
         }
         List<T> Gets(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
         {
-            if (Db.IsDebug) Db.ShowSqlString(sql, Params);
+            //if (Db.IsDebug) Db.ShowSqlString(sql, Params);
             using (var dr = Db.Read(sql, Params))
             {
                 if (dr.HasRows)
@@ -66,7 +66,7 @@ namespace Snow.Orm
 
         long[] GetIds(StringBuilder sql, List<DbParameter> Params)
         {
-            if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
+            //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
             using (var dr = Db.Read(sql.ToString(), Params))
             {
                 if (dr.HasRows)
@@ -84,7 +84,7 @@ namespace Snow.Orm
 
         bool Exist(StringBuilder sql, List<DbParameter> Params)
         {
-            if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
+            //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
             using (var dr = Db.Read(sql.ToString(), Params))
             {
                 if (dr.Read())
@@ -96,7 +96,7 @@ namespace Snow.Orm
         }
         int Count(StringBuilder sql, List<DbParameter> Params)
         {
-            if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
+            //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
             using (var dr = Db.Read(sql.ToString(), Params))
             {
                 if (dr.Read())

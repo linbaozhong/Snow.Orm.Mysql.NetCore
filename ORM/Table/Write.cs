@@ -34,7 +34,9 @@ namespace Snow.Orm
                 return false;
             }
             catch { throw; }
-            finally { if (Db.IsDebug) Db.ShowSqlString(sql, _Params); }
+            finally {
+                //if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
+            }
         }
         public bool Insert(T bean)
         {
@@ -57,7 +59,7 @@ namespace Snow.Orm
                 }
             }
             var sql = "UPDATE " + TableString + " SET " + string.Join(",", _SetColumns) + $" WHERE {DB.GetName("ID")}={id};";
-            if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
+            //if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
 
             if (_SetColumns.Count == 0) { throw new Exception("SQL语法错误"); }
             try
@@ -90,7 +92,9 @@ namespace Snow.Orm
             sql.Append($" WHERE {DB.GetName("ID")}={id};");
             try { return Db.Write(sql.ToString(), Params); }
             catch (Exception) { throw; }
-            finally { if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params); }
+            finally {
+                //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
+            }
         }
         public bool Update<V>(long id, string col, V val)
         {
@@ -102,7 +106,7 @@ namespace Snow.Orm
             {
                 _Param = DB.GetParam(col, val);
                 sql = "UPDATE " + TableString + " SET " + DB.GetCondition(col) + $" WHERE {DB.GetName("ID")}={id};";
-                if (Db.IsDebug) Db.ShowSqlString(sql, _Param);
+                //if (Db.IsDebug) Db.ShowSqlString(sql, _Param);
             }
             else { throw new Exception(col + "列不存在"); }
 
@@ -125,7 +129,7 @@ namespace Snow.Orm
             {
                 var _setColumn = cond.GetSetColumn();
                 var sql = "UPDATE " + TableString + " SET " + _setColumn + cond.GetWhereString() + ";";
-                if (Db.IsDebug) Db.ShowSqlString(sql, cond.Params);
+                //if (Db.IsDebug) Db.ShowSqlString(sql, cond.Params);
 
                 if (_setColumn == "")
                 {
@@ -145,7 +149,7 @@ namespace Snow.Orm
         public bool Delete(long id)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")}={id};";
-            if (Db.IsDebug) Db.ShowSqlString(sql);
+            //if (Db.IsDebug) Db.ShowSqlString(sql);
             try
             {
                 if (Db.Write(sql))
@@ -167,7 +171,7 @@ namespace Snow.Orm
         public bool Delete(IEnumerable<long> ids)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")} in ({string.Join(",", ids)});";
-            if (Db.IsDebug) Db.ShowSqlString(sql);
+            //if (Db.IsDebug) Db.ShowSqlString(sql);
             try
             {
                 if (Db.Write(sql))
@@ -197,7 +201,7 @@ namespace Snow.Orm
             try
             {
                 var sql = "DELETE FROM " + TableString + cond.GetWhereString() + ";";
-                if (Db.IsDebug) Db.ShowSqlString(sql, cond.Params);
+                //if (Db.IsDebug) Db.ShowSqlString(sql, cond.Params);
                 if (Db.Write(sql))
                 {
                     Task.Run(() =>
@@ -224,6 +228,11 @@ namespace Snow.Orm
         public void RemoveListCache(T bean, string orderby = null, uint count = 1000)
         {
             ListCache.Remove(CombineCacheKey(bean, orderby, count));
+        }
+        public void RemoveListCache(Sql cond)
+        {
+            ListCache.Remove(CombineCacheKey(cond));
+            if (!cond.Disposed) cond.Dispose();
         }
     }
 }

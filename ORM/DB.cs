@@ -597,7 +597,9 @@ namespace Snow.Orm
             var sql = GetRawSql(sqlString, ref Params, args);
             try { return Write(sql, Params); }
             catch (Exception) { throw; }
-            finally { if (IsDebug) ShowSqlString(sql, Params); }
+            finally {
+                //if (IsDebug) ShowSqlString(sql, Params);
+            }
         }
         /// <summary>
         /// 执行原生数据库查询,并返回DataTable
@@ -612,7 +614,9 @@ namespace Snow.Orm
             var sql = GetRawSql(sqlString, ref Params, args);
             try { return Query(sql, Params); }
             catch (Exception) { throw; }
-            finally { if (IsDebug) ShowSqlString(sql, Params); }
+            finally {
+                //if (IsDebug) ShowSqlString(sql, Params);
+            }
         }
         /// <summary>
         /// 原生sql命令
