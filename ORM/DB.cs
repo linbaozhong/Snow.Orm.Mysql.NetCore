@@ -576,7 +576,7 @@ namespace Snow.Orm
             }
             catch
             {
-                throw;
+               throw;
             }
             finally
             {

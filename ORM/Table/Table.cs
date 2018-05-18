@@ -51,6 +51,7 @@ namespace Snow.Orm
         /// </summary>
         public string JsonName { private set; get; }
 
+        public log4net.ILog Log { get { return Db.Log; } }
         /// <summary>
         /// 固有公共属性(继承类必须排除)
         /// </summary>

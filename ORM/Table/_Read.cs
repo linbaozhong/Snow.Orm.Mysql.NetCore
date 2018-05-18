@@ -40,7 +40,6 @@ namespace Snow.Orm
         }
         List<T> Gets(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
         {
-            //if (Db.IsDebug) Db.ShowSqlString(sql, Params);
             using (var dr = Db.Read(sql, Params))
             {
                 if (dr.HasRows)

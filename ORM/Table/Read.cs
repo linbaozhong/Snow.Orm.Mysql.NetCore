@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Text;
 
@@ -36,11 +37,11 @@ namespace Snow.Orm
             }
             return Get(row, args);
         }
-        public T GetCache(Sql cond, params string[] args)
+        public T GetCache(Sql cond)
         {
             var ids = GetCacheIds(cond);
             if (ids == null) return null;
-            return GetCache(ids[0], args);
+            return GetCache(ids[0], cond.Columns.ToArray());
         }
         /// <summary>
         /// 读取实时数据对象
@@ -172,12 +173,13 @@ namespace Snow.Orm
             catch { throw; }
         }
 
-        public List<T> GetCaches(Sql cond, params string[] args)
+        public List<T> GetCaches(Sql cond)
         {
             var ids = GetCacheIds(cond);
             if (ids == null) return null;
             var _list = new List<T>();
             T _obj = null;
+            var args = cond.Columns.ToArray();
             foreach (var id in ids)
             {
                 _obj = GetCache(id, args);
@@ -336,6 +338,16 @@ namespace Snow.Orm
             }
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
+        }
+        /// <summary>
+        /// 执行原生查询
+        /// </summary>
+        /// <param name="sqlString"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public DataTable Query(string sqlString, params object[] args)
+        {
+            return Db.Query(sqlString, args);
         }
     }
 

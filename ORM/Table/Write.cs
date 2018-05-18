@@ -24,19 +24,12 @@ namespace Snow.Orm
                 }
             }
             var sql = "INSERT INTO " + TableString + " (" + string.Join(",", _Fields) + ") VALUES(" + string.Join(",", _Values) + "); select ROW_COUNT(),LAST_INSERT_ID();";
-            try
+            if (Db.Insert(sql, _Params, ref id))
             {
-                if (Db.Insert(sql, _Params, ref id))
-                {
-                    ListCache.Clear();
-                    return true;
-                }
-                return false;
+                ListCache.Clear();
+                return true;
             }
-            catch { throw; }
-            finally {
-                //if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
-            }
+            return false;
         }
         public bool Insert(T bean)
         {
@@ -62,16 +55,13 @@ namespace Snow.Orm
             //if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
 
             if (_SetColumns.Count == 0) { throw new Exception("SQL语法错误"); }
-            try
+
+            if (Db.Write(sql, _Params))
             {
-                if (Db.Write(sql, _Params))
-                {
-                    RowCache.Remove(id);
-                    return true;
-                }
-                return false;
+                RowCache.Remove(id);
+                return true;
             }
-            catch { throw; }
+            return false;
         }
         /// <summary>
         /// UPDATE
@@ -92,7 +82,8 @@ namespace Snow.Orm
             sql.Append($" WHERE {DB.GetName("ID")}={id};");
             try { return Db.Write(sql.ToString(), Params); }
             catch (Exception) { throw; }
-            finally {
+            finally
+            {
                 //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
             }
         }
