@@ -10,6 +10,8 @@ namespace Snow.Orm
     {
         RowLock row_lock = new RowLock();
         RowsLock rows_lock = new RowsLock();
+
+        #region 单个数据对象
         /// <summary>
         /// 读取缓存中的数据对象
         /// </summary>
@@ -105,19 +107,9 @@ namespace Snow.Orm
                 throw;
             }
         }
+        #endregion
 
-        public object GetSingle(Sql cond)
-        {
-            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
-            try
-            {
-                var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, cond.GetWhereString(), " limit 1;");
-                return GetSingle(_sql, cond.Params);
-            }
-            catch { throw; }
-            finally { if (!cond.Disposed) cond.Dispose(); }
-        }
-
+        #region 多条数据
         /// <summary>
         /// 读取前size个对象
         /// </summary>
@@ -260,10 +252,7 @@ namespace Snow.Orm
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             try
             {
-                if (from == CacheTypes.None)
-                {
-                    return GetIds(cond);
-                }
+                if (from == CacheTypes.None) { return GetIds(cond); }
 
                 long[] ids = null;
                 string ck = CombineCacheKey(cond);
@@ -288,7 +277,40 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
         }
+        #endregion
 
+        #region  读取首行首列数据
+        /// <summary>
+        /// 读取首行首列数据
+        /// </summary>
+        /// <param name="cond">Snow.Orm.Sql 读取条件</param>
+        /// <returns></returns>
+        public object GetSingle(Sql cond)
+        {
+            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
+            try
+            {
+                var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, cond.GetWhereString(), " limit 1;");
+                return Db.ReadSingle(_sql, cond.Params);
+            }
+            catch { throw; }
+            finally { if (!cond.Disposed) cond.Dispose(); }
+        }
+         /// <summary>
+         /// 读取指定id的指定列数据
+         /// </summary>
+         /// <param name="id"></param>
+         /// <param name="col">列名</param>
+         /// <returns></returns>
+        public object GetSingle(long id, string col)
+        {
+            if (id < 0) return null;
+            var _sql = string.Concat("SELECT ", DB.GetName(col), FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
+            return Db.ReadSingle(_sql);
+        }
+        #endregion
+
+        #region 其他方法
         /// <summary>
         /// 是否存在
         /// </summary>
@@ -339,6 +361,8 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
         }
+        #endregion
+
         /// <summary>
         /// 执行原生查询
         /// </summary>

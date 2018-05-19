@@ -157,7 +157,7 @@ namespace Snow.Orm
             return string.Concat(_RestrictPrefix, col, _RestrictPostfix, op, _ParameterPrefix, col);
         }
 
-        public static string SetColumnFunc(string col, string val)
+        public static string SetColumnFunc<T>(string col, T val)
         {
             return string.Concat(_RestrictPrefix, col, _RestrictPostfix, "=", val);
         }
@@ -316,7 +316,7 @@ namespace Snow.Orm
                 throw e;
             }
         }
-        public object ReadSingle(string sql, List<DbParameter> parames)
+        public object ReadSingle(string sql, List<DbParameter> parames = null)
         {
             if (sql == null || sql.Length < 3) return null;
 
@@ -576,7 +576,7 @@ namespace Snow.Orm
             }
             catch
             {
-               throw;
+                throw;
             }
             finally
             {
@@ -597,7 +597,8 @@ namespace Snow.Orm
             var sql = GetRawSql(sqlString, ref Params, args);
             try { return Write(sql, Params); }
             catch (Exception) { throw; }
-            finally {
+            finally
+            {
                 //if (IsDebug) ShowSqlString(sql, Params);
             }
         }
@@ -614,7 +615,8 @@ namespace Snow.Orm
             var sql = GetRawSql(sqlString, ref Params, args);
             try { return Query(sql, Params); }
             catch (Exception) { throw; }
-            finally {
+            finally
+            {
                 //if (IsDebug) ShowSqlString(sql, Params);
             }
         }

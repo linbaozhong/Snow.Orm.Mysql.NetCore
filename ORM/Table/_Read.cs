@@ -8,15 +8,8 @@ namespace Snow.Orm
 {
     public partial class Table<T>
     {
-        object GetSingle(string sql, List<DbParameter> Params)
-        {
-            //if (Db.IsDebug) Db.ShowSqlString(sql, Params);
-            return Db.ReadSingle(sql, Params);
-        }
-
         T Get(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
         {
-            //if (Db.IsDebug) Db.ShowSqlString(sql, Params);
             using (var dr = Db.Read(sql, Params))
             {
                 if (dr.Read())

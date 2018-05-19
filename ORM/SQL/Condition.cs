@@ -342,7 +342,7 @@ namespace Snow.Orm
             }
             if (isFunc)
             {
-                OtherCondition.Append(DB.SetColumnFunc(col, val.ToString()));
+                OtherCondition.Append(DB.SetColumnFunc(col, val));
             }
             else
             {
