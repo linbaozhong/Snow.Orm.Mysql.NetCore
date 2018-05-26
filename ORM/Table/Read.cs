@@ -164,22 +164,6 @@ namespace Snow.Orm
             }
             catch { throw; }
         }
-
-        public List<T> GetCaches(Sql cond)
-        {
-            var ids = GetCacheIds(cond);
-            if (ids == null) return null;
-            var _list = new List<T>();
-            T _obj = null;
-            var args = cond.Columns.ToArray();
-            foreach (var id in ids)
-            {
-                _obj = GetCache(id, args);
-                if (_obj == null) continue;
-                _list.Add(_obj);
-            }
-            return _list;
-        }
         /// <summary>
         /// 读取ids(缺省读取前1000个)
         /// </summary>
@@ -243,9 +227,30 @@ namespace Snow.Orm
             return ids;
         }
         /// <summary>
+        /// 读取缓存的数据列表(缺省读取前1000个)
+        /// </summary>
+        /// <param name="cond"></param>
+        /// <returns></returns>
+        public List<T> GetCaches(Sql cond)
+        {
+            var ids = GetCacheIds(cond);
+            if (ids == null) return null;
+            var _list = new List<T>();
+            T _obj = null;
+            var args = cond.Columns.ToArray();
+            foreach (var id in ids)
+            {
+                _obj = GetCache(id, args);
+                if (_obj == null) continue;
+                _list.Add(_obj);
+            }
+            return _list;
+        }
+        /// <summary>
         /// 读取缓存的ids(缺省读取前1000个)
         /// </summary>
         /// <param name="cond"></param>
+        /// <param name="from"></param>
         /// <returns></returns>
         public long[] GetCacheIds(Sql cond, CacheTypes from = CacheTypes.From)
         {
@@ -296,12 +301,12 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
         }
-         /// <summary>
-         /// 读取指定id的指定列数据
-         /// </summary>
-         /// <param name="id"></param>
-         /// <param name="col">列名</param>
-         /// <returns></returns>
+        /// <summary>
+        /// 读取指定id的指定列数据
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="col">列名</param>
+        /// <returns></returns>
         public object GetSingle(long id, string col)
         {
             if (id < 0) return null;
