@@ -27,10 +27,7 @@ namespace Snow.Orm
             }
             return null;
         }
-        List<T> Gets(StringBuilder sql, List<DbParameter> Params, IEnumerable<string> cols = null)
-        {
-            return Gets(sql.ToString(), Params, cols);
-        }
+        
         List<T> Gets(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
         {
             using (var dr = Db.Read(sql, Params))

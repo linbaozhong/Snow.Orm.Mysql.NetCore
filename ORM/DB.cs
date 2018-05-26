@@ -171,7 +171,6 @@ namespace Snow.Orm
             return string.Concat(_RestrictPrefix, col, _RestrictPostfix);
         }
 
-
         public static DbParameter GetParam<T>(string col, T val, int maxsize = 0)
         {
             if (string.IsNullOrWhiteSpace(col)) return null;

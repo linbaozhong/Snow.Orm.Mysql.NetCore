@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Text;
@@ -7,6 +8,11 @@ namespace Snow.Orm
 {
     public partial class Table<T>
     {
+        /// <summary>
+        /// Select Fields 字典
+        /// </summary>
+        static ConcurrentDictionary<string, string> SelectColumns = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
         string TableString
         {
             get { return DB.GetName(Name); }
@@ -15,20 +21,46 @@ namespace Snow.Orm
         {
             get { return " FROM " + TableString; }
         }
-        static string GetColumnString(IEnumerable<string> args)
+        /// <summary>
+        /// 构造Select语句中的Fields
+        /// </summary>
+        /// <param name="cols"></param>
+        /// <returns></returns>
+        static string GetSelectColumnString(IEnumerable<string> cols)
         {
             var _strings = new List<string>();
-            foreach (var col in args)
+            foreach (var col in cols)
             {
-                if (col.IndexOf('(') == -1)
-                    _strings.Add(DB.GetName(col));  // 列
-                else
-                {
-                    // 聚合函数
-                    _strings.Add(col); 
-                }
+                _strings.Add(DB.GetName(col));  // 列
             }
             return string.Join(",", _strings);
+        }
+        /// <summary>
+        /// 构造Select语句中的Fields
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        static string GetSelectColumnStringFromArgs(IEnumerable<string> args)
+        {
+            var _selectColumns = string.Empty;
+            var _key = args.Join();
+            if (SelectColumns.TryGetValue(_key, out _selectColumns)) return _selectColumns;
+
+            var _strings = new List<string>();
+            var _index = -1;
+            foreach (var arg in args)
+            {
+                _index = _Columns.IndexOf(arg);
+                if (_Columns.Contains(arg))
+                {
+                    _strings.Add(DB.GetName(arg));   // 聚合函数
+                    continue;
+                }
+                _strings.Add(arg);
+            }
+            _selectColumns = _strings.Join();
+            SelectColumns.TryAdd(_key, _selectColumns);
+            return _selectColumns;
         }
 
         static string GetWhereCondition(T bean, List<DbParameter> Params)

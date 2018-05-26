@@ -7,42 +7,32 @@ namespace Snow.Orm
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class, Inherited = true)]
     public class OrmTableAttribute : Attribute
     {
-        public OrmTableAttribute(string JsonName)
+        public OrmTableAttribute(string name)
         {
-            Json = JsonName;
+            Name = name;
         }
         ///// <summary>
         ///// 表名
         ///// </summary>
-        //public string Table { set; get; }
-        /// <summary>
-        /// Json名
-        /// </summary>
-        public string Json { set; get; }
+        public string Name { set; get; }
     }
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class, Inherited = true)]
     public class OrmColumnAttribute : Attribute
     {
-        public OrmColumnAttribute(string JsonName)
+        public OrmColumnAttribute(string name)
         {
-            Json = JsonName;
+            JsonName = name;
         }
-        ///// <summary>
-        ///// 表名
-        ///// </summary>
-        //public string Table { set; get; }
-        ///// <summary>
-        ///// 列名
-        ///// </summary>
-        //public string Column { set; get; }
+
         ///// <summary>
         ///// 是主键
         ///// </summary>
         //public bool IsKey { set; get; }
+
         /// <summary>
-        /// Json名
+        /// 列名
         /// </summary>
-        public string Json { set; get; }
+        public string JsonName { set; get; }
 
     }
 

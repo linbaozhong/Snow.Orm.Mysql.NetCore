@@ -54,7 +54,7 @@ namespace Snow.Orm
         public T Get(long id, params string[] args)
         {
             if (id < 0) return null;
-            var _sql = string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetColumnString(args), FromTableString, " WHERE ", DB.GetName("id"), "=", id, " limit 1;");
+            var _sql = string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetSelectColumnStringFromArgs(args), FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
             return Get(_sql, null, args);
         }
         /// <summary>
@@ -126,18 +126,18 @@ namespace Snow.Orm
             if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
             if (count > 0) _sql.Append(" LIMIT " + count);
 
-            return Gets(_sql, _Params);
+            return Gets(_sql.ToString(), _Params);
         }
         public List<T> Gets(Sql cond)
         {
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             try
             {
-                var _sql = new StringBuilder(string.Concat("SELECT ", cond.Columns.Count == 0 ? SelectColumnString : GetColumnString(cond.Columns), FromTableString, cond.GetWhereString()));
+                var _sql = new StringBuilder(string.Concat("SELECT ", cond.Columns.Count == 0 ? SelectColumnString : GetSelectColumnStringFromArgs(cond.Columns), FromTableString, cond.GetWhereString()));
                 _sql.Append(cond.GetOrderbyString());
                 _sql.Append(cond.GetPageString());
 
-                return Gets(_sql, cond.Params, cond.Columns);
+                return Gets(_sql.ToString(), cond.Params, cond.Columns);
             }
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }

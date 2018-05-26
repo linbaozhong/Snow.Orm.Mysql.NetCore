@@ -9,11 +9,20 @@ namespace Snow.Orm
 {
     public partial class Table<T> where T : BaseEntity, new()
     {
+        #region 私有字段
         DB Db;
+        /// <summary>
+        /// SELECT 语句中的 Fields
+        /// </summary>
         static string SelectColumnString;
 
         Cache<long, T> RowCache;
         Cache<string, long[]> ListCache;
+        /// <summary>
+        /// 表字段字典(列名的小写字典)
+        /// </summary>
+        static List<string> _ColumnDictionary = new List<string>();
+        #endregion
 
         ///// <summary>
         ///// (属性名-列)字典
@@ -30,15 +39,11 @@ namespace Snow.Orm
 
 
         /// <summary>
-        /// 表字段字典
-        /// </summary>
-        static List<string> _ColumnDictionary = new List<string>();
-        /// <summary>
-        /// 表字段
+        /// T 属性(表字段)
         /// </summary>
         protected static List<string> _Columns = new List<string>();
         /// <summary>
-        /// T 属性
+        /// Json名
         /// </summary>
         protected static List<string> _Jsons = new List<string>();
 
@@ -46,10 +51,6 @@ namespace Snow.Orm
         /// 数据库表名
         /// </summary>
         public string Name { private set; get; }
-        /// <summary>
-        /// JSON表名
-        /// </summary>
-        public string JsonName { private set; get; }
 
         public log4net.ILog Log { get { return Db.Log; } }
         /// <summary>
@@ -62,44 +63,37 @@ namespace Snow.Orm
         {
             Db = db;
             Type objType = typeof(T);
-            Name = objType.Name;
             //取类的自定义特性
-            object objAttr = objType.GetCustomAttribute(typeof(OrmTableAttribute), true);
-            JsonName = objAttr == null ? Name : (objAttr as OrmTableAttribute).Json;
+            var objAttr = objType.GetCustomAttribute(typeof(OrmTableAttribute), true);
+            Name = objAttr == null ? objType.Name : (objAttr as OrmTableAttribute).Name;
 
-            string _propName, _jsonName;
+            string _jsonName, _colName;
             OrmColumnAttribute attr;
             var _properties = objType.GetProperties();
             //遍历类的全部公共属性
             foreach (PropertyInfo propInfo in _properties)
             {
-                _propName = propInfo.Name;
+                _colName = propInfo.Name;
                 // 忽略固有公共属性
-                if (OmitProperties.Contains(_propName)) continue;
+                if (OmitProperties.Contains(_colName)) continue;
 
                 // 取属性上的自定义特性
                 objAttr = propInfo.GetCustomAttribute(typeof(OrmColumnAttribute), false);
                 if (objAttr == null)
                 {
-                    _jsonName = _propName;
+                    _jsonName = _colName;
                 }
                 else
                 {
                     attr = objAttr as OrmColumnAttribute;
-                    _jsonName = string.IsNullOrWhiteSpace(attr.Json) ? _propName : attr.Json;
-                    //// 记录主键
-                    //if (attr.IsKey)
-                    //    PrimaryKey.Add(_propName);
+                    _jsonName = string.IsNullOrWhiteSpace(attr.JsonName) ? _colName : attr.JsonName;
                 }
-                //Propertys.Add(_colName, _propName); //列名
-                //Columns.Add(_propName, _colName);
-                //
-                _Columns.Add(_propName);
-                _ColumnDictionary.Add(_propName.ToLower());
+                _Columns.Add(_colName);
+                _ColumnDictionary.Add(_colName.ToLower());
                 _Jsons.Add(_jsonName);
             }
 
-            SelectColumnString = GetColumnString(_Columns);
+            SelectColumnString = GetSelectColumnString(_Columns);
 
             switch (type)
             {
