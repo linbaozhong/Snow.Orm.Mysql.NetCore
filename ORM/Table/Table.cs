@@ -14,14 +14,15 @@ namespace Snow.Orm
         /// <summary>
         /// SELECT 语句中的 Fields
         /// </summary>
-        static string SelectColumnString;
+        string SelectColumnString;
 
         Cache<long, T> RowCache;
         Cache<string, long[]> ListCache;
         /// <summary>
         /// 表字段字典(列名的小写字典)
         /// </summary>
-        static List<string> _ColumnDictionary = new List<string>();
+        //List<string> _ColumnDictionary = new List<string>();
+        Dictionary<string, string> _ColumnDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         #endregion
 
         ///// <summary>
@@ -45,7 +46,7 @@ namespace Snow.Orm
         /// <summary>
         /// Json名
         /// </summary>
-        protected static List<string> _Jsons = new List<string>();
+        //protected static List<string> _Jsons = new List<string>();
 
         /// <summary>
         /// 数据库表名
@@ -89,8 +90,9 @@ namespace Snow.Orm
                     _jsonName = string.IsNullOrWhiteSpace(attr.JsonName) ? _colName : attr.JsonName;
                 }
                 _Columns.Add(_colName);
-                _ColumnDictionary.Add(_colName.ToLower());
-                _Jsons.Add(_jsonName);
+                //_ColumnDictionary.Add(_colName.ToLower());
+                _ColumnDictionary.Add(_colName, _jsonName);
+                //_Jsons.Add(_jsonName);
             }
 
             SelectColumnString = GetSelectColumnString(_Columns);

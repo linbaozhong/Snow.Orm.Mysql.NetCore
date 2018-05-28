@@ -8,8 +8,8 @@ namespace Snow.Orm
 {
     public partial class Table<T>
     {
-        RowLock row_lock = new RowLock();
-        RowsLock rows_lock = new RowsLock();
+        static RowLock row_lock = new RowLock();
+        static RowsLock rows_lock = new RowsLock();
 
         #region 单个数据对象
         /// <summary>

@@ -82,13 +82,13 @@ namespace Snow.Orm
         {
             var _json = new T() as BaseEntity;
             var i = -1;
+            var _jsonName = string.Empty;
             foreach (var key in args)
             {
-                i = _ColumnDictionary.IndexOf(key.ToLower());
-                if (i == -1)
-                    _json.Add(key, DBNull.Value);
+                if (_ColumnDictionary.TryGetValue(key, out _jsonName))
+                    _json.Add(_jsonName, bean.TryGet(key, DBNull.Value));
                 else
-                    _json.Add(_Jsons[i], bean.TryGet(key, DBNull.Value));
+                    _json.Add(key, DBNull.Value);
             }
             return _json as T;
         }

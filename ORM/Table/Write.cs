@@ -93,7 +93,7 @@ namespace Snow.Orm
 
             DbParameter _Param = null;
             string sql = null;
-            if (_ColumnDictionary.Contains(col.ToLower()))
+            if (_ColumnDictionary.ContainsKey(col))
             {
                 _Param = DB.GetParam(col, val);
                 sql = "UPDATE " + TableString + " SET " + DB.GetCondition(col) + $" WHERE {DB.GetName("ID")}={id};";
@@ -140,7 +140,6 @@ namespace Snow.Orm
         public bool Delete(long id)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")}={id};";
-            //if (Db.IsDebug) Db.ShowSqlString(sql);
             try
             {
                 if (Db.Write(sql))
