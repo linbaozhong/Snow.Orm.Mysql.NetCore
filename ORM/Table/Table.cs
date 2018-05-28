@@ -10,19 +10,19 @@ namespace Snow.Orm
     public partial class Table<T> where T : BaseEntity, new()
     {
         #region 私有字段
-        DB Db;
+        static DB Db;
         /// <summary>
         /// SELECT 语句中的 Fields
         /// </summary>
-        string SelectColumnString;
+        static string SelectColumnString;
 
-        Cache<long, T> RowCache;
-        Cache<string, long[]> ListCache;
+        static Cache<long, T> RowCache;
+        static Cache<string, long[]> ListCache;
         /// <summary>
         /// 表字段字典(列名的小写字典)
         /// </summary>
         //List<string> _ColumnDictionary = new List<string>();
-        Dictionary<string, string> _ColumnDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        static Dictionary<string, string> _ColumnDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         #endregion
 
         ///// <summary>
@@ -100,24 +100,24 @@ namespace Snow.Orm
             switch (type)
             {
                 case TableTypes.Dict:
-                    this.RowCache = new Cache<long, T>(3000, 15);
-                    this.ListCache = new Cache<string, long[]>(3000, 10);
+                    RowCache = new Cache<long, T>(3000, 15);
+                    ListCache = new Cache<string, long[]>(3000, 10);
                     break;
                 case TableTypes.List:
-                    this.RowCache = new Cache<long, T>(2000, 100);
-                    this.ListCache = new Cache<string, long[]>(1000, 20);
+                    RowCache = new Cache<long, T>(2000, 100);
+                    ListCache = new Cache<string, long[]>(1000, 20);
                     break;
                 case TableTypes.Large:
-                    this.RowCache = new Cache<long, T>(60, 1000);
-                    this.ListCache = new Cache<string, long[]>(30, 50);
+                    RowCache = new Cache<long, T>(60, 1000);
+                    ListCache = new Cache<string, long[]>(30, 50);
                     break;
                 case TableTypes.Small:
-                    this.RowCache = new Cache<long, T>(15, 0);
-                    this.ListCache = new Cache<string, long[]>(15, 0);
+                    RowCache = new Cache<long, T>(15, 0);
+                    ListCache = new Cache<string, long[]>(15, 0);
                     break;
                 default:
-                    this.RowCache = new Cache<long, T>(60, 300);
-                    this.ListCache = new Cache<string, long[]>(30, 50);
+                    RowCache = new Cache<long, T>(60, 300);
+                    ListCache = new Cache<string, long[]>(30, 50);
                     break;
             }
         }
