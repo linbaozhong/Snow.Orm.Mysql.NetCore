@@ -585,7 +585,7 @@ namespace Snow.Orm
         }
 
         #region 原生SQL
-        static ConcurrentDictionary<string, string> SqlDict = new ConcurrentDictionary<string, string>();
+        static ConcurrentDictionary<string, string> SqlDict = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         /// <summary>
         /// 执行原生数据库操作命令
         /// </summary>
