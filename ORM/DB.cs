@@ -1,5 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -583,6 +584,8 @@ namespace Snow.Orm
             }
         }
 
+        #region 原生SQL
+        static ConcurrentDictionary<string, string> SqlDict = new ConcurrentDictionary<string, string>();
         /// <summary>
         /// 执行原生数据库操作命令
         /// </summary>
@@ -633,8 +636,22 @@ namespace Snow.Orm
             if (len == 0)
                 return sqlString;
 
-            var sql = new StringBuilder(200);
             var i = 0;
+            string sqlStr = null;
+            if (SqlDict.TryGetValue(sqlString, out sqlStr))
+            {
+                if (len > 0)
+                {
+                    foreach (var arg in args)
+                    {
+                        dbParams.Add(DB.GetParam("_cols_" + i, args[i]));
+                        i++;
+                    }
+                }
+                return sqlStr;
+            }
+
+            var sql = new StringBuilder(200);
             string col = string.Empty;
             foreach (var c in sqlString)
             {
@@ -648,8 +665,13 @@ namespace Snow.Orm
                 }
                 sql.Append(c);
             }
-            return sql.ToString();
+            sqlStr = sql.ToString();
+            SqlDict.AddOrUpdate(sqlString, sqlStr, (x, y) => sqlStr);
+            return sqlStr;
         }
+        #endregion
+
+        #region 调试时打印SQL字符串
         public void ShowSqlString(string sql, List<DbParameter> parames)
         {
             if (Log == null) return;
@@ -660,5 +682,6 @@ namespace Snow.Orm
             if (Log == null) return;
             Log.Debug(Debug(sql, parame));
         }
+        #endregion
     }
 }
