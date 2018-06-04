@@ -29,7 +29,7 @@ namespace Snow.Orm
             {
                 if (RowCache.Get(id, ref row)) return Get(row, args);
 
-                var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, " WHERE ", DB.GetName("id"), "=", id, " limit 1;");
+                var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
                 row = Get(_sql, args);
 
                 if (row == null)
@@ -55,7 +55,7 @@ namespace Snow.Orm
         {
             if (id < 0) return null;
             var _sql = string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetSelectColumnStringFromArgs(args), FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
-            return Get(_sql, null, args);
+            return _Get(_sql, null, args);
         }
         /// <summary>
         /// 读取数据对象
@@ -69,7 +69,7 @@ namespace Snow.Orm
             var _Params = new List<DbParameter>();
             var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, GetWhereCondition(bean, _Params), " limit 1;");
 
-            return Get(_sql, _Params);
+            return _Get(_sql, _Params);
         }
         public T Get(Sql cond)
         {
@@ -77,7 +77,7 @@ namespace Snow.Orm
             try
             {
                 var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, cond.GetWhereString(), " limit 1;");
-                return Get(_sql, cond.Params);
+                return _Get(_sql, cond.Params);
             }
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
@@ -100,7 +100,7 @@ namespace Snow.Orm
             var sql = DB.GetRawSql(sqlString, ref Params, args);
             try
             {
-                return Get(sql, Params);
+                return _Get(sql, Params);
             }
             catch (Exception)
             {
@@ -126,7 +126,7 @@ namespace Snow.Orm
             if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
             if (count > 0) _sql.Append(" LIMIT " + count);
 
-            return Gets(_sql.ToString(), _Params);
+            return _Gets(_sql.ToString(), _Params);
         }
         public List<T> Gets(Sql cond)
         {
@@ -137,10 +137,17 @@ namespace Snow.Orm
                 _sql.Append(cond.GetOrderbyString());
                 _sql.Append(cond.GetPageString());
 
-                return Gets(_sql.ToString(), cond.Params, cond.Columns);
+                return _Gets(_sql.ToString(), cond.Params, cond.Columns);
             }
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
+        }
+        public List<T> Gets<V>(string col, V val)
+        {
+            var _Params = new List<DbParameter>();
+            var _sql = new StringBuilder(string.Concat("SELECT ", SelectColumnString, FromTableString, " WHERE ", GetCondition(col, val, _Params)));
+
+            return _Gets(_sql.ToString(), _Params);
         }
         /// <summary>
         /// 原生SQL方式读取实时数据对象列表
@@ -160,7 +167,7 @@ namespace Snow.Orm
             var sql = DB.GetRawSql(sqlString, ref Params, args);
             try
             {
-                return Gets(sql, Params);
+                return _Gets(sql, Params);
             }
             catch { throw; }
         }
@@ -178,7 +185,7 @@ namespace Snow.Orm
                 _sql.Append(cond.GetOrderbyString());
                 _sql.Append(cond.GetPageString());
 
-                return GetIds(_sql, cond.Params);
+                return _GetIds(_sql, cond.Params);
             }
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
@@ -200,7 +207,7 @@ namespace Snow.Orm
                 if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
                 if (count > 0) _sql.Append(" LIMIT " + count);
 
-                return GetIds(_sql, _Params);
+                return _GetIds(_sql, _Params);
             }
 
             long[] ids = null;
@@ -217,7 +224,7 @@ namespace Snow.Orm
                 if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
                 if (count > 0) _sql.Append(" LIMIT " + count);
 
-                ids = GetIds(_sql, _Params);
+                ids = _GetIds(_sql, _Params);
 
                 if (ids == null) ListCache.Add(ck, null, 5);
                 else ListCache.Add(ck, ids);
@@ -329,7 +336,7 @@ namespace Snow.Orm
                 cond.Top(1);
                 var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, cond.GetWhereString()));
                 _sql.Append(cond.GetPageString());
-                return Exist(_sql, cond.Params);
+                return _Exist(_sql, cond.Params);
             }
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
@@ -344,7 +351,7 @@ namespace Snow.Orm
             if (GetCache(id) == null)
             {
                 var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, " WHERE ", DB.GetName("id"), "=", id, " limit 1;"));
-                return Exist(_sql, null);
+                return _Exist(_sql, null);
             }
             return true;
         }
@@ -361,7 +368,7 @@ namespace Snow.Orm
                 if (cond != null)
                     _sql.Append(cond.GetWhereString());
 
-                return Count(_sql, cond.Params);
+                return _Count(_sql, cond.Params);
             }
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }

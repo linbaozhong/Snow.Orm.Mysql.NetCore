@@ -8,7 +8,7 @@ namespace Snow.Orm
 {
     public partial class Table<T>
     {
-        T Get(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
+        T _Get(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
         {
             using (var dr = Db.Read(sql, Params))
             {
@@ -28,7 +28,7 @@ namespace Snow.Orm
             return null;
         }
         
-        List<T> Gets(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
+        List<T> _Gets(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
         {
             using (var dr = Db.Read(sql, Params))
             {
@@ -53,7 +53,7 @@ namespace Snow.Orm
             return null;
         }
 
-        long[] GetIds(StringBuilder sql, List<DbParameter> Params)
+        long[] _GetIds(StringBuilder sql, List<DbParameter> Params)
         {
             //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
             using (var dr = Db.Read(sql.ToString(), Params))
@@ -71,7 +71,7 @@ namespace Snow.Orm
             return null;
         }
 
-        bool Exist(StringBuilder sql, List<DbParameter> Params)
+        bool _Exist(StringBuilder sql, List<DbParameter> Params)
         {
             //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
             using (var dr = Db.Read(sql.ToString(), Params))
@@ -83,7 +83,7 @@ namespace Snow.Orm
             }
             return false;
         }
-        int Count(StringBuilder sql, List<DbParameter> Params)
+        int _Count(StringBuilder sql, List<DbParameter> Params)
         {
             //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
             using (var dr = Db.Read(sql.ToString(), Params))
