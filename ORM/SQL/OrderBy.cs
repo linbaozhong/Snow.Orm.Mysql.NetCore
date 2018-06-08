@@ -34,5 +34,25 @@ namespace Snow.Orm
             _OrderBy.Add(DB.GetName(col) + " DESC");
             return this;
         }
+        /// <summary>
+        /// 随机排序
+        /// </summary>
+        /// <returns></returns>
+        public Sql OrderByRandom()
+        {
+            _OrderBy.Add("rand()");
+            return this;
+        }
+        /// <summary>
+        /// 按指定的运算字符串排序
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public Sql OrderByString(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return this;
+            _OrderBy.Add(s);
+            return this;
+        }
     }
 }

@@ -108,16 +108,16 @@ namespace Snow.Orm
                     ListCache = new Cache<string, long[]>(1000, 20);
                     break;
                 case TableTypes.Large:
-                    RowCache = new Cache<long, T>(60, 1000);
-                    ListCache = new Cache<string, long[]>(30, 50);
+                    RowCache = new Cache<long, T>(10, 1000);
+                    ListCache = new Cache<string, long[]>(5, 50);
                     break;
                 case TableTypes.Small:
-                    RowCache = new Cache<long, T>(15, 0);
-                    ListCache = new Cache<string, long[]>(15, 0);
+                    RowCache = new Cache<long, T>(10, 0);
+                    ListCache = new Cache<string, long[]>(5, 0);
                     break;
                 default:
-                    RowCache = new Cache<long, T>(60, 300);
-                    ListCache = new Cache<string, long[]>(30, 50);
+                    RowCache = new Cache<long, T>(10, 300);
+                    ListCache = new Cache<string, long[]>(5, 50);
                     break;
             }
         }
