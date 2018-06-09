@@ -15,15 +15,21 @@ namespace Snow.Orm
             }
             return "";
         }
-
+        /// <summary>
+        /// 原生条件字符串
+        /// </summary>
+        /// <param name="sqlString"> and id=? or name=?</param>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public Sql Where(string sqlString, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlString))
             {
                 throw new Exception("数据库操作命令不能为空");
             }
-            var sql = DB.GetRawSql(sqlString, ref Params, args);
-            OtherCondition.Append(sql);
+            var cmd = DB.GetRawSql(sqlString, args);
+            if (cmd.SqlParams != null) Params.AddRange(cmd.SqlParams);
+            OtherCondition.Append(cmd.SqlString);
             return this;
         }
 

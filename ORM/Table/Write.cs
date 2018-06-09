@@ -8,6 +8,7 @@ namespace Snow.Orm
 {
     public partial class Table<T>
     {
+        #region Insert
         public bool Insert(T bean, ref long id)
         {
             if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
@@ -36,7 +37,9 @@ namespace Snow.Orm
             long id = 0;
             return Insert(bean, ref id);
         }
+        #endregion
 
+        #region Update
         public bool Update(long id, T bean)
         {
             if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
@@ -77,10 +80,10 @@ namespace Snow.Orm
             sql.Append("UPDATE " + TableString);
             if (!setString.Trim().StartsWith("SET ", StringComparison.CurrentCultureIgnoreCase)) sql.Append(" SET ");
 
-            var Params = new List<DbParameter>();
-            sql.Append(DB.GetRawSql(setString, ref Params, args));
+            var cmd = DB.GetRawSql(setString, args);
+            sql.Append(cmd.SqlString);
             sql.Append($" WHERE {DB.GetName("ID")}={id};");
-            try { return Db.Write(sql.ToString(), Params); }
+            try { return Db.Write(sql.ToString(), cmd.SqlParams); }
             catch (Exception) { throw; }
             finally
             {
@@ -136,7 +139,54 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
         }
+        /// <summary>
+        /// 递增
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="col"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public bool Incr(long id, string col, int val = 1)
+        {
+            if (val == 0) return true;
+            return IncrDecr(id, col, val);
+        }
+        /// <summary>
+        /// 递减
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="col"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public bool Decr(long id, string col, int val = 1)
+        {
+            if (val == 0) return true;
+            return IncrDecr(id, col, val, "-");
+        }
+        bool IncrDecr(long id, string col, int val, string op = "+")
+        {
+            string sql = null;
+            if (_ColumnDictionary.ContainsKey(col))
+            {
+                sql = "UPDATE " + TableString + " SET " + DB.GetName(col) + Op.Eq + DB.GetName(col) + $"{op}{val} WHERE {DB.GetName("ID")}={id};";
+                //if (Db.IsDebug) Db.ShowSqlString(sql, _Param);
+            }
+            else { throw new Exception(col + "列不存在"); }
 
+            try
+            {
+                if (Db.Write(sql))
+                {
+                    RowCache.Remove(id);
+                    return true;
+                }
+                return false;
+            }
+            catch { throw; }
+        }
+        #endregion
+
+        #region Delete
         public bool Delete(long id)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")}={id};";
@@ -180,7 +230,6 @@ namespace Snow.Orm
                 throw;
             }
         }
-
         public bool Delete(Sql cond)
         {
             if (cond == null)
@@ -206,7 +255,9 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
         }
+        #endregion
 
+        #region Cache
         public void RemoveCache(long id)
         {
             RowCache.Remove(id);
@@ -224,5 +275,6 @@ namespace Snow.Orm
             ListCache.Remove(CombineCacheKey(cond));
             if (!cond.Disposed) cond.Dispose();
         }
+        #endregion
     }
 }

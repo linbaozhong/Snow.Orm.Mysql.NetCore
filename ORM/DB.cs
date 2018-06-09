@@ -13,6 +13,16 @@ namespace Snow.Orm
     /// </summary>
 	public sealed partial class DB
     {
+        public class SqlCommand
+        {
+            //public SqlCommand() { }
+            //public SqlCommand(string sql) { this.SqlString = sql; }
+            //public SqlCommand(string sql, List<DbParameter> parames) { this.SqlString = sql; this.SqlParams = parames; }
+
+            public string SqlString { set; get; }
+            public List<DbParameter> SqlParams = new List<DbParameter>();
+        }
+
         public log4net.ILog Log;
 
         /// <summary>
@@ -366,11 +376,14 @@ namespace Snow.Orm
             try
             {
                 dap.Fill(tb);
+                if (tb.Rows.Count > 0) return tb;
+                tb.Dispose();
+                return null;
             }
             catch
             {
                 tb.Dispose();
-                return null;
+                throw;
             }
             finally
             {
@@ -381,9 +394,6 @@ namespace Snow.Orm
                 }
                 if (dap != null) dap.Dispose();
             }
-            if (tb.Rows.Count > 0) return tb;
-            tb.Dispose();
-            return null;
         }
         public DataTable Query(string sql, List<DbParameter> parames)
         {
@@ -408,11 +418,14 @@ namespace Snow.Orm
             try
             {
                 dap.Fill(tb);
+                if (tb.Rows.Count > 0) return tb;
+                tb.Dispose();
+                return null;
             }
             catch
             {
                 tb.Dispose();
-                return null;
+                throw;
             }
             finally
             {
@@ -423,9 +436,6 @@ namespace Snow.Orm
                 }
                 if (dap != null) dap.Dispose();
             }
-            if (tb.Rows.Count > 0) return tb;
-            tb.Dispose();
-            return null;
         }
 
         /// <summary>
@@ -448,6 +458,7 @@ namespace Snow.Orm
             {
                 cmd.Connection.Open();
                 cmd.ExecuteNonQuery();
+                return true;
             }
             catch
             {
@@ -461,7 +472,6 @@ namespace Snow.Orm
                     cmd.Dispose();
                 }
             }
-            return true;
         }
         /// <summary>
         /// 
@@ -486,6 +496,7 @@ namespace Snow.Orm
             {
                 cmd.Connection.Open();
                 cmd.ExecuteNonQuery();
+                return true;
             }
             catch
             {
@@ -499,7 +510,6 @@ namespace Snow.Orm
                     cmd.Dispose();
                 }
             }
-            return true;
         }
         /// <summary>
         /// 执行存储过程
@@ -531,6 +541,7 @@ namespace Snow.Orm
                 cmd.Connection.Open();
                 cmd.ExecuteNonQuery();
                 returnVal = (int)cmd.Parameters["p_return"].Value;
+                return returnVal == 0;
             }
             catch
             {
@@ -541,8 +552,6 @@ namespace Snow.Orm
                 if (cmd.Connection != null) cmd.Connection.Close();
                 cmd.Dispose();
             }
-
-            return returnVal == 0;
         }
         /// <summary>
         /// 
@@ -595,9 +604,8 @@ namespace Snow.Orm
         public bool Exec(string sqlString, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlString)) { throw new Exception("数据库操作命令不能为空"); }
-            var Params = new List<DbParameter>();
-            var sql = GetRawSql(sqlString, ref Params, args);
-            try { return Write(sql, Params); }
+            var cmd = GetRawSql(sqlString, args);
+            try { return Write(cmd.SqlString, cmd.SqlParams); }
             catch (Exception) { throw; }
             finally
             {
@@ -613,9 +621,8 @@ namespace Snow.Orm
         public DataTable Query(string sqlString, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlString)) { throw new Exception("数据库查询字符串不能为空"); }
-            var Params = new List<DbParameter>();
-            var sql = GetRawSql(sqlString, ref Params, args);
-            try { return Query(sql, Params); }
+            var cmd = GetRawSql(sqlString, args);
+            try { return Query(cmd.SqlString, cmd.SqlParams); }
             catch (Exception) { throw; }
             finally
             {
@@ -630,25 +637,30 @@ namespace Snow.Orm
         /// <param name="dbParams">返回的 List<DbParameter></param>
         /// <param name="args">查询条件值,和sql字符串中的？号对应</param>
         /// <returns>sql字符串</returns>
-        public static string GetRawSql(string sqlString, ref List<DbParameter> dbParams, params object[] args)
+        public static SqlCommand GetRawSql(string sqlString, params object[] args)
         {
+            SqlCommand cmd = new SqlCommand();
             var len = args.Length;
             if (len == 0)
-                return sqlString;
+            {
+                cmd.SqlString = sqlString;
+                return cmd;
+            }
 
             var i = 0;
             string sqlStr = null;
             if (SqlDict.TryGetValue(sqlString, out sqlStr))
             {
+                cmd.SqlString = sqlStr;
                 if (len > 0)
                 {
                     foreach (var arg in args)
                     {
-                        dbParams.Add(DB.GetParam("_cols_" + i, args[i]));
+                        cmd.SqlParams.Add(DB.GetParam("_cols_" + i, args[i]));
                         i++;
                     }
                 }
-                return sqlStr;
+                return cmd;
             }
 
             var sql = new StringBuilder(200);
@@ -659,17 +671,63 @@ namespace Snow.Orm
                 {
                     col = "_cols_" + i;
                     sql.Append(DB._ParameterPrefix + col);
-                    dbParams.Add(DB.GetParam(col, args[i]));
+                    cmd.SqlParams.Add(DB.GetParam(col, args[i]));
                     i++;
                     continue;
                 }
                 sql.Append(c);
             }
-            sqlStr = sql.ToString();
-            SqlDict.AddOrUpdate(sqlString, sqlStr, (x, y) => sqlStr);
-            return sqlStr;
+            cmd.SqlString = sql.ToString(); ;
+            SqlDict.AddOrUpdate(sqlString, cmd.SqlString, (x, y) => cmd.SqlString);
+
+            return cmd;
         }
         #endregion
+
+        #region 事物
+        public bool ExecTrans(List<SqlCommand> sqls)
+        {
+            if (sqls == null) return false;
+            DbCommand cmd = this.Command();
+            if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
+            cmd.Connection = this.Connection();
+            cmd.Connection.ConnectionString = WriteConnStr;
+            cmd.Connection.Open();
+            cmd.Transaction = cmd.Connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
+            try
+            {
+                foreach (var sql in sqls)
+                {
+                    if (string.IsNullOrWhiteSpace(sql.SqlString))
+                    {
+                        cmd.Transaction.Rollback();
+                        return false;
+                    }
+                    cmd.CommandText = sql.SqlString;
+                    cmd.Parameters.Clear();
+                    if (sql.SqlParams != null) { foreach (MySqlParameter param in sql.SqlParams) { cmd.Parameters.Add(param); } }
+                    cmd.ExecuteNonQuery();
+                }
+                cmd.Transaction.Commit();
+                return true;
+            }
+            catch
+            {
+                cmd.Transaction.Rollback();
+                throw;
+            }
+            finally
+            {
+                if (cmd != null)
+                {
+                    if (cmd.Connection != null) cmd.Connection.Close();
+                    cmd.Dispose();
+                }
+            }
+        }
+        #endregion
+
 
         #region 调试时打印SQL字符串
         public void ShowSqlString(string sql, List<DbParameter> parames)

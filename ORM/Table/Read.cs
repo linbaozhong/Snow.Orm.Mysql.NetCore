@@ -96,11 +96,10 @@ namespace Snow.Orm
                 throw new Exception("数据库查询字符串不能为空");
             }
 
-            var Params = new List<DbParameter>();
-            var sql = DB.GetRawSql(sqlString, ref Params, args);
+            var cmd = DB.GetRawSql(sqlString, args);
             try
             {
-                return _Get(sql, Params);
+                return _Get(cmd.SqlString, cmd.SqlParams);
             }
             catch (Exception)
             {
@@ -163,11 +162,10 @@ namespace Snow.Orm
                 throw new Exception("数据库查询字符串不能为空");
             }
 
-            var Params = new List<DbParameter>();
-            var sql = DB.GetRawSql(sqlString, ref Params, args);
+            var cmd = DB.GetRawSql(sqlString, args);
             try
             {
-                return _Gets(sql, Params);
+                return _Gets(cmd.SqlString, cmd.SqlParams);
             }
             catch { throw; }
         }

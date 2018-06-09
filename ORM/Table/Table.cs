@@ -21,32 +21,14 @@ namespace Snow.Orm
         /// <summary>
         /// 表字段字典(列名的小写字典)
         /// </summary>
-        //List<string> _ColumnDictionary = new List<string>();
         static Dictionary<string, string> _ColumnDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         #endregion
-
-        ///// <summary>
-        ///// (属性名-列)字典
-        ///// </summary>
-        //public Dictionary<string, string> Columns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        ///// <summary>
-        ///// (列名-属性名)字典
-        ///// </summary>
-        //public Dictionary<string, string> Propertys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        ///// <summary>
-        ///// 主键字典
-        ///// </summary>
-        //public List<string> PrimaryKey = new List<string>();
 
 
         /// <summary>
         /// T 属性(表字段)
         /// </summary>
         protected static List<string> _Columns = new List<string>();
-        /// <summary>
-        /// Json名
-        /// </summary>
-        //protected static List<string> _Jsons = new List<string>();
 
         /// <summary>
         /// 数据库表名
@@ -90,9 +72,7 @@ namespace Snow.Orm
                     _jsonName = string.IsNullOrWhiteSpace(attr.JsonName) ? _colName : attr.JsonName;
                 }
                 _Columns.Add(_colName);
-                //_ColumnDictionary.Add(_colName.ToLower());
                 _ColumnDictionary.Add(_colName, _jsonName);
-                //_Jsons.Add(_jsonName);
             }
 
             SelectColumnString = GetSelectColumnString(_Columns);

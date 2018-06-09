@@ -22,16 +22,15 @@ namespace Snow.Orm
         private uint Minute;
 
         /// <summary>
-        /// 
+        /// 缓存
         /// </summary>
-        /// <param name="minute"></param>
-        /// <param name="capacity"></param>
-        /// <param name="comparer"></param>
-        /// <param name="concurrentNum"></param>
+        /// <param name="minute">缓存时间(分钟)</param>
+        /// <param name="capacity">容量</param>
+        /// <param name="comparer">比较器</param>
+        /// <param name="concurrentNum">缓存数量</param>
 		public Cache(uint minute = 0, int capacity = 0, IEqualityComparer<TKey> comparer = null, int concurrentNum = 0)
         {
             if (minute <= 0) this.Minute = 60;
-            else if (minute < 10) this.Minute = 10;
             else if (minute > 10000) this.Minute = 10000;
             else this.Minute = minute;
 
