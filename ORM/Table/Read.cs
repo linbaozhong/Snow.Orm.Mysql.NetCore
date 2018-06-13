@@ -176,7 +176,7 @@ namespace Snow.Orm
         /// <returns></returns>
         public long[] GetIds(Sql cond)
         {
-            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
+            if (cond == null) { return GetIds(); }
             try
             {
                 var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, cond.GetWhereString()));
@@ -192,12 +192,12 @@ namespace Snow.Orm
         {
             try
             {
-                var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString," LIMIT 500"));
+                var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, " LIMIT 1000"));
 
-                return _GetIds(_sql,null);
+                return _GetIds(_sql, null);
             }
             catch { throw; }
-            finally {  }
+            finally { }
         }
         /// <summary>
         /// 读取前size个ID
@@ -268,9 +268,9 @@ namespace Snow.Orm
         /// <param name="cond"></param>
         /// <param name="from"></param>
         /// <returns></returns>
-        public long[] GetCacheIds(Sql cond, CacheTypes from = CacheTypes.From)
+        public long[] GetCacheIds(Sql cond = null, CacheTypes from = CacheTypes.From)
         {
-            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
+            //if (cond == null) { cond = Sql.Factory.Where("1=1"); }
             try
             {
                 if (from == CacheTypes.None) { return GetIds(cond); }
@@ -296,42 +296,7 @@ namespace Snow.Orm
                 return ids;
             }
             catch { throw; }
-            finally { if (!cond.Disposed) cond.Dispose(); }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cond"></param>
-        /// <param name="from"></param>
-        /// <returns></returns>
-        public long[] GetCacheIds(CacheTypes from = CacheTypes.From)
-        {
-            try
-            {
-                if (from == CacheTypes.None) { return GetIds(); }
-
-                long[] ids = null;
-                string ck = "1=1";
-                if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
-
-                rows_lock.key = ck;
-                lock (rows_lock)
-                {
-                    if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
-
-                    ids = GetIds();
-
-                    if (ids == null)
-                        ListCache.Add(ck, null, 5);
-                    else
-                        ListCache.Add(ck, ids);
-
-                    from = CacheTypes.From;
-                }
-                return ids;
-            }
-            catch { throw; }
-            finally {  }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
 
         #endregion
