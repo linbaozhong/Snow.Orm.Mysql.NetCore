@@ -19,7 +19,7 @@ namespace Snow.Orm
                     if (cols == null || cols.Count() == 0) cols = _Columns;
                     foreach (var item in cols)
                     {
-                        _obj[item] = dr.IsDBNull(i) ? null : dr[i];
+                        _obj[item] = dr.IsDBNull(i) ? null : (dr.GetDataTypeName(i) == "TINYINT" ? dr.GetInt16(i) : dr[i]);
                         i++;
                     }
                     return _obj as T;
@@ -27,7 +27,7 @@ namespace Snow.Orm
             }
             return null;
         }
-        
+
         List<T> _Gets(string sql, List<DbParameter> Params, IEnumerable<string> cols = null)
         {
             using (var dr = Db.Read(sql, Params))
@@ -42,7 +42,7 @@ namespace Snow.Orm
                         var i = 0;
                         foreach (var item in cols)
                         {
-                            _obj[item] = dr.IsDBNull(i) ? null : dr[i];
+                            _obj[item] = dr.IsDBNull(i) ? null : (dr.GetDataTypeName(i) == "TINYINT" ? dr.GetInt16(i) : dr[i]);
                             i++;
                         }
                         _list.Add(_obj as T);
@@ -55,7 +55,6 @@ namespace Snow.Orm
 
         long[] _GetIds(StringBuilder sql, List<DbParameter> Params)
         {
-            //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
             using (var dr = Db.Read(sql.ToString(), Params))
             {
                 if (dr.HasRows)

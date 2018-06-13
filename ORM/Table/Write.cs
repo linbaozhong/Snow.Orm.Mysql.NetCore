@@ -40,8 +40,41 @@ namespace Snow.Orm
         #endregion
 
         #region Update
+        public bool Update(T bean)
+        {
+            if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
+            var _SetColumns = new List<string>();
+            var _Params = new List<DbParameter>();
+            var id = 0;
+            foreach (var item in bean)
+            {
+                if (item.Key.Equals("ID", StringComparison.OrdinalIgnoreCase))
+                {
+                    id = item.Value.ToInt();
+                }
+                else if (_Columns.Contains(item.Key))
+                {
+                    _SetColumns.Add(DB.GetCondition(item.Key));
+                    _Params.Add(DB.GetParam(item.Key, item.Value));
+                }
+            }
+            if (id == 0) { throw new Exception("id = 0 错误"); }
+            var sql = "UPDATE " + TableString + " SET " + string.Join(",", _SetColumns) + $" WHERE {DB.GetName("ID")}={id};";
+            //if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
+
+            if (_SetColumns.Count == 0) { throw new Exception("SQL语法错误"); }
+
+            if (Db.Write(sql, _Params))
+            {
+                RowCache.Remove(id);
+                return true;
+            }
+            return false;
+        }
+
         public bool Update(long id, T bean)
         {
+            if (id == 0) { throw new Exception("id = 0 错误"); }
             if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
             var _SetColumns = new List<string>();
             var _Params = new List<DbParameter>();

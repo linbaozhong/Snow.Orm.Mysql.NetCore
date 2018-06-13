@@ -13,7 +13,7 @@ namespace Snow.Orm
 
         #region 单个数据对象
         /// <summary>
-        /// 读取缓存中的数据对象
+        /// 读取缓存中的数据对象的指定字段
         /// </summary>
         /// <param name="id">主键</param>
         /// <param name="args">返回的字段</param>
@@ -188,6 +188,17 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
         }
+        public long[] GetIds()
+        {
+            try
+            {
+                var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString," LIMIT 500"));
+
+                return _GetIds(_sql,null);
+            }
+            catch { throw; }
+            finally {  }
+        }
         /// <summary>
         /// 读取前size个ID
         /// </summary>
@@ -287,6 +298,42 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cond"></param>
+        /// <param name="from"></param>
+        /// <returns></returns>
+        public long[] GetCacheIds(CacheTypes from = CacheTypes.From)
+        {
+            try
+            {
+                if (from == CacheTypes.None) { return GetIds(); }
+
+                long[] ids = null;
+                string ck = "1=1";
+                if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
+
+                rows_lock.key = ck;
+                lock (rows_lock)
+                {
+                    if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
+
+                    ids = GetIds();
+
+                    if (ids == null)
+                        ListCache.Add(ck, null, 5);
+                    else
+                        ListCache.Add(ck, ids);
+
+                    from = CacheTypes.From;
+                }
+                return ids;
+            }
+            catch { throw; }
+            finally {  }
+        }
+
         #endregion
 
         #region  读取首行首列数据
