@@ -18,12 +18,12 @@ namespace Snow.Orm
 
         static Cache<long, T> RowCache;
         static Cache<string, long[]> ListCache;
+        static Cache<string, T> CondRowCache;
         /// <summary>
         /// 表字段字典(列名的小写字典)
         /// </summary>
         static Dictionary<string, string> _ColumnDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         #endregion
-
 
         /// <summary>
         /// T 属性(表字段)
@@ -81,25 +81,35 @@ namespace Snow.Orm
             {
                 case TableTypes.Dict:
                     RowCache = new Cache<long, T>(3000, 15);
+                    CondRowCache = new Cache<string, T>(3000, 15);
                     ListCache = new Cache<string, long[]>(3000, 10);
                     break;
                 case TableTypes.List:
                     RowCache = new Cache<long, T>(2000, 100);
+                    CondRowCache = new Cache<string, T>(2000, 100);
                     ListCache = new Cache<string, long[]>(1000, 20);
                     break;
                 case TableTypes.Large:
                     RowCache = new Cache<long, T>(10, 1000);
+                    CondRowCache = new Cache<string, T>(10, 1000);
                     ListCache = new Cache<string, long[]>(5, 50);
                     break;
                 case TableTypes.Small:
                     RowCache = new Cache<long, T>(10, 0);
+                    CondRowCache = new Cache<string, T>(10, 0);
                     ListCache = new Cache<string, long[]>(5, 0);
                     break;
                 default:
                     RowCache = new Cache<long, T>(10, 300);
+                    CondRowCache = new Cache<string, T>(10, 300);
                     ListCache = new Cache<string, long[]>(5, 50);
                     break;
             }
+        }
+
+        public void Debug(string msg)
+        {
+            Log.Error(msg);
         }
     }
 

@@ -39,11 +39,34 @@ namespace Snow.Orm
             }
             return Get(row, args);
         }
-        public T GetCache(Sql cond)
+        public T GetCache(Sql cond, CacheTypes from = CacheTypes.From)
         {
-            var ids = GetCacheIds(cond);
-            if (ids == null) return null;
-            return GetCache(ids[0], cond.Columns.ToArray());
+            try
+            {
+                if (from == CacheTypes.None) { return Get(cond); }
+
+                T row = null;
+                string ck = CombineCacheKey(cond);
+                if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return row;
+
+                rows_lock.key = ck;
+                lock (rows_lock)
+                {
+                    if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return row;
+
+                    row = Get(cond);
+
+                    if (row == null)
+                        CondRowCache.Add(ck, null, 5);
+                    else
+                        CondRowCache.Add(ck, row);
+
+                    from = CacheTypes.From;
+                }
+                return row;
+            }
+            catch { throw; }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
         /// <summary>
         /// 读取实时数据对象
@@ -76,8 +99,8 @@ namespace Snow.Orm
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             try
             {
-                var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, cond.GetWhereString(), " limit 1;");
-                return _Get(_sql, cond.Params);
+                var _sql = string.Concat("SELECT ", cond.Columns.Count == 0 ? SelectColumnString : GetSelectColumnStringFromArgs(cond.Columns), FromTableString, cond.GetWhereString(), " limit 1;");
+                return _Get(_sql, cond.Params,cond.Columns);
             }
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
@@ -242,26 +265,26 @@ namespace Snow.Orm
             }
             return ids;
         }
-        /// <summary>
-        /// 读取缓存的数据列表(缺省读取前1000个)
-        /// </summary>
-        /// <param name="cond"></param>
-        /// <returns></returns>
-        public List<T> GetCaches(Sql cond)
-        {
-            var ids = GetCacheIds(cond);
-            if (ids == null) return null;
-            var _list = new List<T>();
-            T _obj = null;
-            var args = cond.Columns.ToArray();
-            foreach (var id in ids)
-            {
-                _obj = GetCache(id, args);
-                if (_obj == null) continue;
-                _list.Add(_obj);
-            }
-            return _list;
-        }
+        ///// <summary>
+        ///// 读取缓存的数据列表(缺省读取前1000个)
+        ///// </summary>
+        ///// <param name="cond"></param>
+        ///// <returns></returns>
+        //public List<T> GetCaches(Sql cond)
+        //{
+        //    var ids = GetCacheIds(cond);
+        //    if (ids == null) return null;
+        //    var _list = new List<T>();
+        //    T _obj = null;
+        //    var args = cond.Columns.ToArray();
+        //    foreach (var id in ids)
+        //    {
+        //        _obj = GetCache(id, args);
+        //        if (_obj == null) continue;
+        //        _list.Add(_obj);
+        //    }
+        //    return _list;
+        //}
         /// <summary>
         /// 读取缓存的ids(缺省读取前1000个)
         /// </summary>
@@ -270,7 +293,6 @@ namespace Snow.Orm
         /// <returns></returns>
         public long[] GetCacheIds(Sql cond = null, CacheTypes from = CacheTypes.From)
         {
-            //if (cond == null) { cond = Sql.Factory.Where("1=1"); }
             try
             {
                 if (from == CacheTypes.None) { return GetIds(cond); }
