@@ -265,26 +265,27 @@ namespace Snow.Orm
             }
             return ids;
         }
-        ///// <summary>
-        ///// 读取缓存的数据列表(缺省读取前1000个)
-        ///// </summary>
-        ///// <param name="cond"></param>
-        ///// <returns></returns>
-        //public List<T> GetCaches(Sql cond)
-        //{
-        //    var ids = GetCacheIds(cond);
-        //    if (ids == null) return null;
-        //    var _list = new List<T>();
-        //    T _obj = null;
-        //    var args = cond.Columns.ToArray();
-        //    foreach (var id in ids)
-        //    {
-        //        _obj = GetCache(id, args);
-        //        if (_obj == null) continue;
-        //        _list.Add(_obj);
-        //    }
-        //    return _list;
-        //}
+        /// <summary>
+        /// 读取缓存的数据列表(缺省读取前1000个)
+        /// (只用于有唯一主键ID的数据表或视图)
+        /// </summary>
+        /// <param name="cond"></param>
+        /// <returns></returns>
+        public List<T> GetCaches(Sql cond)
+        {
+            var args = cond.Columns.ToArray();
+            var ids = GetCacheIds(cond);
+            if (ids == null) return null;
+            var _list = new List<T>();
+            T _obj = null;
+            foreach (var id in ids)
+            {
+                _obj = GetCache(id, args);
+                if (_obj == null) continue;
+                _list.Add(_obj);
+            }
+            return _list;
+        }
         /// <summary>
         /// 读取缓存的ids(缺省读取前1000个)
         /// </summary>
