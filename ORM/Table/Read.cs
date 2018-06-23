@@ -28,10 +28,7 @@ namespace Snow.Orm
             lock (row_lock)
             {
                 if (RowCache.Get(id, ref row)) return Get(row, args);
-
-                var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
-                row = Get(_sql, args);
-
+                row = Get(id, args);
                 if (row == null)
                     RowCache.Add(id, null, 5);
                 else
@@ -60,13 +57,13 @@ namespace Snow.Orm
                         CondRowCache.Add(ck, null, 5);
                     else
                         CondRowCache.Add(ck, row);
-
+                    // 让等待中的线程直接读取缓存
                     from = CacheTypes.From;
                 }
                 return row;
             }
             catch { throw; }
-            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
+            finally { }
         }
         /// <summary>
         /// 读取实时数据对象
@@ -100,35 +97,12 @@ namespace Snow.Orm
             try
             {
                 var _sql = string.Concat("SELECT ", cond.Columns.Count == 0 ? SelectColumnString : GetSelectColumnStringFromArgs(cond.Columns), FromTableString, cond.GetWhereString(), " limit 1;");
-                return _Get(_sql, cond.Params,cond.Columns);
+                return _Get(_sql, cond.Params, cond.Columns);
             }
             catch { throw; }
-            finally { if (!cond.Disposed) cond.Dispose(); }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
-        /// <summary>
-        /// 原生SQL方式读取实时数据对象
-        /// 例如：select * from users where id=?
-        /// </summary>
-        /// <param name="sqlString">原生sql字符串</param>
-        /// <param name="args">查询条件值,和sql字符串中的？号对应</param>
-        /// <returns></returns>
-        public T Get(string sqlString, params object[] args)
-        {
-            if (string.IsNullOrWhiteSpace(sqlString))
-            {
-                throw new Exception("数据库查询字符串不能为空");
-            }
 
-            var cmd = DB.GetRawSql(sqlString, args);
-            try
-            {
-                return _Get(cmd.SqlString, cmd.SqlParams);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
         #endregion
 
         #region 多条数据
@@ -162,7 +136,7 @@ namespace Snow.Orm
                 return _Gets(_sql.ToString(), cond.Params, cond.Columns);
             }
             catch { throw; }
-            finally { if (!cond.Disposed) cond.Dispose(); }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
         public List<T> Gets<V>(string col, V val)
         {
@@ -171,27 +145,7 @@ namespace Snow.Orm
 
             return _Gets(_sql.ToString(), _Params);
         }
-        /// <summary>
-        /// 原生SQL方式读取实时数据对象列表
-        /// 例如：select * from users where age>=? and sex=?
-        /// </summary>
-        /// <param name="sqlString">原生sql字符串</param>
-        /// <param name="args">查询条件值,和sql字符串中的？号对应</param>
-        /// <returns></returns>
-        public List<T> Gets(string sqlString, params object[] args)
-        {
-            if (string.IsNullOrWhiteSpace(sqlString))
-            {
-                throw new Exception("数据库查询字符串不能为空");
-            }
 
-            var cmd = DB.GetRawSql(sqlString, args);
-            try
-            {
-                return _Gets(cmd.SqlString, cmd.SqlParams);
-            }
-            catch { throw; }
-        }
         /// <summary>
         /// 读取ids(缺省读取前1000个)
         /// </summary>
@@ -209,7 +163,7 @@ namespace Snow.Orm
                 return _GetIds(_sql, cond.Params);
             }
             catch { throw; }
-            finally { if (!cond.Disposed) cond.Dispose(); }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
         public long[] GetIds()
         {
@@ -257,10 +211,9 @@ namespace Snow.Orm
                 if (count > 0) _sql.Append(" LIMIT " + count);
 
                 ids = _GetIds(_sql, _Params);
-
                 if (ids == null) ListCache.Add(ck, null, 5);
                 else ListCache.Add(ck, ids);
-
+                // 让等待中的线程直接读取缓存
                 from = CacheTypes.From;
             }
             return ids;
@@ -306,20 +259,18 @@ namespace Snow.Orm
                 lock (rows_lock)
                 {
                     if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
-
                     ids = GetIds(cond);
-
                     if (ids == null)
                         ListCache.Add(ck, null, 5);
                     else
                         ListCache.Add(ck, ids);
-
+                    // 让等待中的线程直接读取缓存
                     from = CacheTypes.From;
                 }
                 return ids;
             }
             catch { throw; }
-            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
+            finally {  }
         }
 
         #endregion
@@ -339,7 +290,7 @@ namespace Snow.Orm
                 return Db.ReadSingle(_sql, cond.Params);
             }
             catch { throw; }
-            finally { if (!cond.Disposed) cond.Dispose(); }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
         /// <summary>
         /// 读取指定id的指定列数据
@@ -372,7 +323,7 @@ namespace Snow.Orm
                 return _Exist(_sql, cond.Params);
             }
             catch { throw; }
-            finally { if (!cond.Disposed) cond.Dispose(); }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
         /// <summary>
         /// 是否存在
@@ -404,10 +355,56 @@ namespace Snow.Orm
                 return _Count(_sql, cond.Params);
             }
             catch { throw; }
-            finally { if (!cond.Disposed) cond.Dispose(); }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
         #endregion
 
+        #region 原生查询
+        /// <summary>
+        /// 原生SQL方式读取实时数据对象
+        /// 例如：select * from users where id=?
+        /// </summary>
+        /// <param name="sqlString">原生sql字符串</param>
+        /// <param name="args">查询条件值,和sql字符串中的？号对应</param>
+        /// <returns></returns>
+        public T Get(string sqlString, params object[] args)
+        {
+            if (string.IsNullOrWhiteSpace(sqlString))
+            {
+                throw new Exception("数据库查询字符串不能为空");
+            }
+
+            var cmd = DB.GetRawSql(sqlString, args);
+            try
+            {
+                return _Get(cmd.SqlString, cmd.SqlParams);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// 原生SQL方式读取实时数据对象列表
+        /// 例如：select * from users where age>=? and sex=?
+        /// </summary>
+        /// <param name="sqlString">原生sql字符串</param>
+        /// <param name="args">查询条件值,和sql字符串中的？号对应</param>
+        /// <returns></returns>
+        public List<T> Gets(string sqlString, params object[] args)
+        {
+            if (string.IsNullOrWhiteSpace(sqlString))
+            {
+                throw new Exception("数据库查询字符串不能为空");
+            }
+
+            var cmd = DB.GetRawSql(sqlString, args);
+            try
+            {
+                return _Gets(cmd.SqlString, cmd.SqlParams);
+            }
+            catch { throw; }
+        }
         /// <summary>
         /// 执行原生查询
         /// </summary>
@@ -418,6 +415,7 @@ namespace Snow.Orm
         {
             return Db.Query(sqlString, args);
         }
+        #endregion
     }
 
     public class RowLock

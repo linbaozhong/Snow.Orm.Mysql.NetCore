@@ -265,15 +265,11 @@ namespace Snow.Orm
         }
         public bool Delete(Sql cond)
         {
-            if (cond == null)
-            {
-                throw new Exception("cond 不能为 NULL");
-            }
+            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
 
             try
             {
                 var sql = "DELETE FROM " + TableString + cond.GetWhereString() + ";";
-                //if (Db.IsDebug) Db.ShowSqlString(sql, cond.Params);
                 if (Db.Write(sql))
                 {
                     Task.Run(() =>
@@ -286,7 +282,7 @@ namespace Snow.Orm
                 return false;
             }
             catch { throw; }
-            finally { if (!cond.Disposed) cond.Dispose(); }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
         #endregion
 
