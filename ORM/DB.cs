@@ -708,6 +708,16 @@ namespace Snow.Orm
 
             return cmd;
         }
+
+        public static DbParameter LastIdParameter = GetParam("_LAST_INSERT_ID_", 0);
+        public static SqlCommand GetInsertRawSql(string sqlString, params object[] args)
+        {
+            var cmd = GetRawSql(sqlString, args);
+            if (!cmd.SqlString.TrimEnd().EndsWith(';')) cmd.SqlString += ";";
+            cmd.SqlString += "select ROW_COUNT(),LAST_INSERT_ID();";
+            cmd.SqlParams.Add(LastIdParameter);
+            return cmd;
+        }
         #endregion
 
         #region 事物
@@ -723,6 +733,7 @@ namespace Snow.Orm
 
             try
             {
+                var last_id = 0L;
                 foreach (var sql in sqls)
                 {
                     if (string.IsNullOrWhiteSpace(sql.SqlString))
@@ -732,8 +743,26 @@ namespace Snow.Orm
                     }
                     cmd.CommandText = sql.SqlString;
                     cmd.Parameters.Clear();
-                    if (sql.SqlParams != null) { foreach (MySqlParameter param in sql.SqlParams) { cmd.Parameters.Add(param); } }
-                    cmd.ExecuteNonQuery();
+                    if (sql.SqlParams != null) foreach (MySqlParameter param in sql.SqlParams) { cmd.Parameters.Add(param); }
+
+                    if (sql.SqlParams.Contains(LastIdParameter))
+                    {
+                        var dr = cmd.ExecuteReader();
+                        if (dr.Read() && dr[0].ToInt() > 0)
+                        {
+                            last_id = dr[1].ToLong(-1);
+                        }
+                        dr.Close();
+                    }
+                    else
+                    {
+                        if (last_id > 0L)
+                        {
+                            LastIdParameter.Value = last_id;
+                            cmd.Parameters.Add(LastIdParameter as MySqlParameter);
+                        }
+                        cmd.ExecuteNonQuery();
+                    }
                 }
                 cmd.Transaction.Commit();
                 return true;
