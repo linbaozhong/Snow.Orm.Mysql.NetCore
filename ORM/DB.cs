@@ -326,7 +326,7 @@ namespace Snow.Orm
                 throw e;
             }
         }
-        public object ReadSingle(string sql, List<DbParameter> parames = null)
+        public object ReadSingle(string sql, List<DbParameter> parames)
         {
             if (sql == null || sql.Length < 3) return null;
 
@@ -340,6 +340,32 @@ namespace Snow.Orm
             if (parames != null)
             {
                 foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+            }
+
+            try
+            {
+                cmd.Connection.Open();
+                return cmd.ExecuteScalar();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+        public object ReadSingle(string sql, DbParameter parame = null)
+        {
+            if (sql == null || sql.Length < 3) return null;
+
+            DbCommand cmd = this.Command();
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText = sql;
+            if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
+            cmd.Connection = this.Connection();
+            cmd.Connection.ConnectionString = ReadConnStr;
+
+            if (parame != null)
+            {
+                 cmd.Parameters.Add(parame);
             }
 
             try

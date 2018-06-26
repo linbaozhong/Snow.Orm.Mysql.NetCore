@@ -70,17 +70,28 @@ namespace Snow.Orm
             return null;
         }
 
-        bool _Exist(StringBuilder sql, List<DbParameter> Params)
+        bool _Exists(string sql, List<DbParameter> Params)
         {
             //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
-            using (var dr = Db.Read(sql.ToString(), Params))
-            {
-                if (dr.Read())
-                {
-                    return !dr.IsDBNull(0);
-                }
-            }
-            return false;
+            //using (var dr = Db.Read(sql.ToString(), Params))
+            //{
+            //    if (dr.Read())
+            //    {
+            //        return !dr.IsDBNull(0);
+            //    }
+            //}
+            return Db.ReadSingle(sql, Params) != null;
+        }
+        bool _Exists(string sql, DbParameter Parame = null)
+        {
+            //using (var dr = Db.Read(sql, Parame))
+            //{
+            //    if (dr.Read())
+            //    {
+            //        return !dr.IsDBNull(0);
+            //    }
+            //}
+            return Db.ReadSingle(sql, Parame) != null;
         }
         int _Count(StringBuilder sql, List<DbParameter> Params)
         {

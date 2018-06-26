@@ -270,7 +270,7 @@ namespace Snow.Orm
                 return ids;
             }
             catch { throw; }
-            finally {  }
+            finally { }
         }
 
         #endregion
@@ -312,30 +312,36 @@ namespace Snow.Orm
         /// </summary>
         /// <param name="cond"></param>
         /// <returns></returns>
-        public bool Exist(Sql cond)
+        public bool Exists(Sql cond)
         {
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             try
             {
-                cond.Top(1);
-                var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, cond.GetWhereString()));
-                _sql.Append(cond.GetPageString());
-                return _Exist(_sql, cond.Params);
+                var _sql = string.Concat("SELECT ", DB.GetName("id"), FromTableString, cond.GetWhereString());
+                return _Exists(_sql, cond.Params);
             }
             catch { throw; }
             finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
+        }
+        public bool Exists<V>(string col, V val)
+        {
+            try
+            {
+                return _Exists(string.Concat("SELECT ", DB.GetName("id"), FromTableString," where ", DB.GetCondition(col)), DB.GetParam(col, val));
+            }
+            catch { throw; }
         }
         /// <summary>
         /// 是否存在
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public bool Exist(long id)
+        public bool Exists(long id)
         {
             if (GetCache(id) == null)
             {
-                var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, " WHERE ", DB.GetName("id"), "=", id, " limit 1;"));
-                return _Exist(_sql, null);
+                var _sql = string.Concat("SELECT ", DB.GetName("id"), FromTableString, " WHERE ", DB.GetName("id"), "=", id, " limit 1;");
+                return _Exists(_sql);
             }
             return true;
         }
