@@ -709,8 +709,19 @@ namespace Snow.Orm
             return cmd;
         }
 
-        public static DbParameter LastIdParameter = GetParam("_LAST_INSERT_ID_", 0);
-        public static SqlCommand GetInsertRawSql(string sqlString, params object[] args)
+        static DbParameter LastIdParameter = GetParam("_LAST_INSERT_ID_", 0);
+        /// <summary>
+        /// 事务中多条命令共用的主键参数
+        /// </summary>
+        public static string ReturnID = _ParameterPrefix + LastIdParameter.ParameterName;
+        /// <summary>
+        /// 生成事务中的原生insert命令,并返回自增id,供后面的子命令使用
+        /// 子命令例子:insert user (id,name) values(DB.ReturnID,?)
+        /// </summary>
+        /// <param name="sqlString"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static SqlCommand GetInsertAndReturnIDRawSql(string sqlString, params object[] args)
         {
             var cmd = GetRawSql(sqlString, args);
             if (!cmd.SqlString.TrimEnd().EndsWith(';')) cmd.SqlString += ";";
@@ -720,7 +731,7 @@ namespace Snow.Orm
         }
         #endregion
 
-        #region 事物
+        #region 事务
         public bool ExecTrans(List<SqlCommand> sqls)
         {
             if (sqls == null) return false;
