@@ -28,7 +28,7 @@ namespace Snow.Orm
             lock (row_lock)
             {
                 if (RowCache.Get(id, ref row)) return Get(row, args);
-                row = Get(id, args);
+                row = Get(id);
                 if (row == null)
                     RowCache.Add(id, null, 5);
                 else
@@ -318,7 +318,8 @@ namespace Snow.Orm
             try
             {
                 var _sql = string.Concat("SELECT ", DB.GetName("id"), FromTableString, cond.GetWhereString());
-                return _Exists(_sql, cond.Params);
+                //return _Exists(_sql, cond.Params);
+                return Db.ReadSingle(_sql, cond.Params) != null;
             }
             catch { throw; }
             finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
@@ -327,7 +328,7 @@ namespace Snow.Orm
         {
             try
             {
-                return _Exists(string.Concat("SELECT ", DB.GetName("id"), FromTableString," where ", DB.GetCondition(col)), DB.GetParam(col, val));
+                return Db.ReadSingle(string.Concat("SELECT ", DB.GetName("id"), FromTableString, " where ", DB.GetCondition(col)), DB.GetParam(col, val)) != null;
             }
             catch { throw; }
         }
@@ -341,7 +342,8 @@ namespace Snow.Orm
             if (GetCache(id) == null)
             {
                 var _sql = string.Concat("SELECT ", DB.GetName("id"), FromTableString, " WHERE ", DB.GetName("id"), "=", id, " limit 1;");
-                return _Exists(_sql);
+                return Db.ReadSingle(_sql) != null;
+                //return _Exists(_sql);
             }
             return true;
         }
@@ -358,7 +360,7 @@ namespace Snow.Orm
                 if (cond != null)
                     _sql.Append(cond.GetWhereString());
 
-                return _Count(_sql, cond.Params);
+                return Db.ReadSingle(_sql.ToString(), cond.Params).ToInt();
             }
             catch { throw; }
             finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
