@@ -15,8 +15,8 @@ namespace Snow.Orm
         /// <returns></returns>
         public T Get(T bean, params string[] args)
         {
-            if (bean == null) return null;
             if (args.Length == 0) return bean;
+            if (bean == null) return null;
 
             return _Get(bean as BaseEntity, args);
         }
