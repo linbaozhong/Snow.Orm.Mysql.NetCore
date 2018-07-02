@@ -724,7 +724,7 @@ namespace Snow.Orm
         public static SqlCommand GetInsertAndReturnIDRawSql(string sqlString, params object[] args)
         {
             var cmd = GetRawSql(sqlString, args);
-            if (!cmd.SqlString.TrimEnd().EndsWith(';')) cmd.SqlString += ";";
+            if (!cmd.SqlString.TrimEnd().EndsWith(";")) cmd.SqlString += ";";
             cmd.SqlString += "select ROW_COUNT(),LAST_INSERT_ID();";
             cmd.SqlParams.Add(LastIdParameter);
             return cmd;
