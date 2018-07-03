@@ -44,12 +44,12 @@ namespace Snow.Orm
 
                 T row = null;
                 string ck = CombineCacheKey(cond);
-                if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return row;
+                if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return _Clone(row);
 
                 rows_lock.key = ck;
                 lock (rows_lock)
                 {
-                    if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return row;
+                    if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return _Clone(row);
 
                     row = Get(cond);
 
@@ -60,7 +60,7 @@ namespace Snow.Orm
                     // 让等待中的线程直接读取缓存
                     from = CacheTypes.From;
                 }
-                return row;
+                return _Clone(row);
             }
             catch { throw; }
             finally { }

@@ -43,7 +43,6 @@ namespace Snow.Orm
             catch { return dft; }
         }
 
-
         /// <summary>
         /// 转换
         /// </summary>
@@ -399,6 +398,7 @@ namespace Snow.Orm
         #endregion
 
 
+
         #region string
         /// <summary>
         /// 截除前后空白
@@ -498,6 +498,25 @@ namespace Snow.Orm
 
 
         #region Array
+        public readonly static char[] ItemsColPart = new char[] { '\n' };
+        public static string[] ToArray(this string source)
+        {
+            if (string.IsNullOrWhiteSpace(source)) return null;
+            return source.Split(ItemsColPart, StringSplitOptions.RemoveEmptyEntries);
+        }
+        public static long[] ToIds(this string source)
+        {
+            var _items = source.ToArray();
+            if (_items == null || _items.Length < 1) return null;
+            var _len = _items.Length;
+            List<long> ids = new List<long>(_len);
+            for (int i = 0; i < _len; i++)
+            {
+                long id = _items[i].ToLong(-1);
+                if (id > -1) ids.Add(id);
+            }
+            return ids.ToArray();
+        }
         /// <summary>
         /// 联接成字符串
         /// </summary>

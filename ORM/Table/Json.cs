@@ -7,6 +7,16 @@ namespace Snow.Orm
 {
     public partial class Table<T>
     {
+        T _Clone(T bean)
+        {
+            if (bean == null) return null;
+            var _bean = new T();
+            foreach (var item in bean)
+            {
+                _bean.Add(item.Key, item.Value);
+            }
+            return _bean;
+        }
         /// <summary>
         /// 获取一个实体的指定列
         /// </summary>
@@ -15,10 +25,11 @@ namespace Snow.Orm
         /// <returns></returns>
         public T Get(T bean, params string[] args)
         {
-            if (args.Length == 0) return bean;
             if (bean == null) return null;
+            var _bean = _Clone(bean);
+            if (args.Length == 0) return _bean;
 
-            return _Get(bean as BaseEntity, args);
+            return _Get(_bean as BaseEntity, args);
         }
         /// <summary>
         /// 获取一个LIST的指定列
