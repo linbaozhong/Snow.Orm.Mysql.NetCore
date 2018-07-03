@@ -26,10 +26,9 @@ namespace Snow.Orm
         public T Get(T bean, params string[] args)
         {
             if (bean == null) return null;
-            var _bean = _Clone(bean);
-            if (args.Length == 0) return _bean;
+            if (args.Length == 0) return _Clone(bean);
 
-            return _Get(_bean as BaseEntity, args);
+            return _Get(bean as BaseEntity, args);
         }
         /// <summary>
         /// 获取一个LIST的指定列
