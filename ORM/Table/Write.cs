@@ -164,7 +164,8 @@ namespace Snow.Orm
                 }
                 if (Db.Write(sql, cond.Params))
                 {
-                    Task.Run(() => { RowCache.Remove(GetCacheIds(cond)); });
+                    var _ids = GetCacheIds(cond);
+                    Task.Run(() => { RowCache.Remove(_ids);});
                     return true;
                 }
                 return false;
@@ -272,9 +273,10 @@ namespace Snow.Orm
                 var sql = "DELETE FROM " + TableString + cond.GetWhereString() + ";";
                 if (Db.Write(sql))
                 {
+                    var _ids = GetCacheIds(cond);
                     Task.Run(() =>
                     {
-                        RowCache.Remove(GetCacheIds(cond));
+                        RowCache.Remove(_ids);
                         ListCache.Clear();
                     });
                     return true;

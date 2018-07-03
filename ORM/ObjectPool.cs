@@ -37,7 +37,6 @@ namespace Snow.Orm
             T obj;
             if (buffer.TryTake(out obj))
             {
-                resetFunc.Invoke(obj);
                 return obj;
             }
             else

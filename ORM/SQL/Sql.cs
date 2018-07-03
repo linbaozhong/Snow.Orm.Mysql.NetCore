@@ -16,6 +16,7 @@ namespace Snow.Orm
             return new Sql();
         }, x =>
         {
+            x.Disposed = false;
             x._Columns.Clear();
             x._GroupBy = string.Empty;
             x._Having = string.Empty;
@@ -29,7 +30,6 @@ namespace Snow.Orm
             x.IsKeyCondition = false;
             x.OtherCondition.Clear();
             x.Params.Clear();
-            //x.ResetAction();
         }, 100);
 
         //public void ResetAction()
