@@ -40,7 +40,7 @@ namespace Snow.Orm
         /// 固有公共属性(继承类必须排除)
         /// </summary>
         private static HashSet<string> OmitProperties = new HashSet<string>(
-            new string[] { "Item", "Comparer", "Keys", "Values", "Count" }, StringComparer.OrdinalIgnoreCase);
+            new string[] { "Item", "Comparer", "Keys", "Values", "Count", "Disposed" }, StringComparer.OrdinalIgnoreCase);
 
         public Table(DB db, TableTypes type = TableTypes.Default)
         {
