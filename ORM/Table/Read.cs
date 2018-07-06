@@ -413,6 +413,10 @@ namespace Snow.Orm
             }
             catch { throw; }
         }
+        public DataTable Query(string sqlString)
+        {
+            return Db.Query(sqlString);
+        }
         /// <summary>
         /// 执行原生查询
         /// </summary>

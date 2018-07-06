@@ -41,17 +41,13 @@ namespace Snow.Orm
         static ObjectPool<BaseEntity> pool = new ObjectPool<BaseEntity>(() => { return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) as BaseEntity; },
             x => { x.Disposed = false; }, 10);
 
-        private BaseEntity() { }
         #endregion
 
         //protected string TableName;
         /// <summary>
         /// 实体抽象类
         /// </summary>
-        public BaseEntity(string table) : base(StringComparer.OrdinalIgnoreCase)
-        {
-            //TableName = table;
-        }
+        public BaseEntity() : base(StringComparer.OrdinalIgnoreCase) { }
         public new object this[string key]
         {
             set { base[key] = value; }
