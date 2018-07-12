@@ -96,7 +96,7 @@ namespace Snow.Orm
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             try
             {
-                var _sql = string.Concat("SELECT ", cond.Columns.Count == 0 ? SelectColumnString : GetSelectColumnStringFromArgs(cond.Columns), FromTableString, cond.GetWhereString(), " limit 1;");
+                var _sql = string.Concat("SELECT ", cond.Columns.Count == 0 ? SelectColumnString : GetSelectColumnStringFromArgs(cond.Columns), FromTableString, cond.GetWhereString(), cond.GetGroupbyString(), cond.GetOrderbyString(), " limit 1;");
                 return _Get(_sql, cond.Params, cond.Columns);
             }
             catch { throw; }
@@ -130,6 +130,7 @@ namespace Snow.Orm
             try
             {
                 var _sql = new StringBuilder(string.Concat("SELECT ", cond.Columns.Count == 0 ? SelectColumnString : GetSelectColumnStringFromArgs(cond.Columns), FromTableString, cond.GetWhereString()));
+                _sql.Append(cond.GetGroupbyString());
                 _sql.Append(cond.GetOrderbyString());
                 _sql.Append(cond.GetPageString());
 
@@ -157,6 +158,7 @@ namespace Snow.Orm
             try
             {
                 var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, cond.GetWhereString()));
+                _sql.Append(cond.GetGroupbyString());
                 _sql.Append(cond.GetOrderbyString());
                 _sql.Append(cond.GetPageString());
 
@@ -286,7 +288,7 @@ namespace Snow.Orm
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             try
             {
-                var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, cond.GetWhereString(), " limit 1;");
+                var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, cond.GetWhereString(), cond.GetGroupbyString(), cond.GetOrderbyString(), " limit 1;");
                 return Db.ReadSingle(_sql, cond.Params);
             }
             catch { throw; }
@@ -358,7 +360,10 @@ namespace Snow.Orm
             {
                 var _sql = new StringBuilder(string.Concat("SELECT COUNT(*)", FromTableString));
                 if (cond != null)
+                {
                     _sql.Append(cond.GetWhereString());
+                    _sql.Append(cond.GetGroupbyString());
+                }
 
                 return Db.ReadSingle(_sql.ToString(), cond.Params).ToInt();
             }
@@ -412,6 +417,21 @@ namespace Snow.Orm
                 return _Gets(cmd.SqlString, cmd.SqlParams);
             }
             catch { throw; }
+        }
+        public DataTable Query(Sql cond)
+        {
+            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
+            try
+            {
+                var _sql = new StringBuilder(string.Concat("SELECT ", cond.Columns.Count == 0 ? SelectColumnString : GetSelectColumnStringFromArgs(cond.Columns), FromTableString, cond.GetWhereString()));
+                _sql.Append(cond.GetGroupbyString());
+                _sql.Append(cond.GetOrderbyString());
+                _sql.Append(cond.GetPageString());
+
+                return Db.Query(_sql.ToString(), cond.Params);
+            }
+            catch { throw; }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
         public DataTable Query(string sqlString)
         {

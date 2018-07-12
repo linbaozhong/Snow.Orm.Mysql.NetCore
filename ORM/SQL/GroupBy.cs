@@ -8,23 +8,23 @@ namespace Snow.Orm
 {
     public partial class Sql
     {
-        string _GroupBy;
+        string _GroupBy = null;
         string _Having;
 
         public string GetGroupbyString()
         {
             if (string.IsNullOrWhiteSpace(_GroupBy)) return "";
-            return string.Concat(" GROUP BY ", _GroupBy, string.IsNullOrWhiteSpace(_GroupBy) ? "" : " HAVING " + _Having);
+            return string.Concat(" GROUP BY ", _GroupBy, string.IsNullOrWhiteSpace(_Having) ? "" : " HAVING " + _Having);
         }
 
         /// <summary>
         /// 分组
         /// </summary>
-        /// <param name="groupby"></param>
+        /// <param name="args"></param>
         /// <returns></returns>
-        public Sql GroupBy(string groupby)
+        public Sql GroupBy(params string[] args)
         {
-            _GroupBy = groupby;
+            _GroupBy = string.Join(",",args);
             return this;
         }
         /// <summary>

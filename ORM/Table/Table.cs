@@ -80,14 +80,14 @@ namespace Snow.Orm
             switch (type)
             {
                 case TableTypes.Dict:
-                    RowCache = new Cache<long, T>(3000, 15);
-                    CondRowCache = new Cache<string, T>(3000, 15);
-                    ListCache = new Cache<string, long[]>(3000, 10);
+                    RowCache = new Cache<long, T>(30, 15);
+                    CondRowCache = new Cache<string, T>(30, 15);
+                    ListCache = new Cache<string, long[]>(20, 10);
                     break;
                 case TableTypes.List:
-                    RowCache = new Cache<long, T>(2000, 100);
-                    CondRowCache = new Cache<string, T>(2000, 100);
-                    ListCache = new Cache<string, long[]>(1000, 20);
+                    RowCache = new Cache<long, T>(20, 100);
+                    CondRowCache = new Cache<string, T>(20, 100);
+                    ListCache = new Cache<string, long[]>(10, 20);
                     break;
                 case TableTypes.Large:
                     RowCache = new Cache<long, T>(10, 1000);

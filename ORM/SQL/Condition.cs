@@ -29,6 +29,13 @@ namespace Snow.Orm
             }
             var cmd = DB.GetRawSql(sqlString, args);
             if (cmd.SqlParams != null) Params.AddRange(cmd.SqlParams);
+            // 如果有左括号,忽略逻辑运算符
+            if (hasParenthesis) { hasParenthesis = false; }
+            else if (OtherCondition.Length > 0)
+            {
+                OtherCondition.Append(AndOr.And);
+            }
+
             OtherCondition.Append(cmd.SqlString);
             return this;
         }
@@ -342,7 +349,9 @@ namespace Snow.Orm
         {
             if (IsKeyCondition) return;
             if (string.IsNullOrWhiteSpace(col)) return;
-            if (OtherCondition.Length > 0)
+            // 如果有左括号,忽略逻辑运算符
+            if (hasParenthesis) { hasParenthesis = false; }
+            else if (OtherCondition.Length > 0)
             {
                 OtherCondition.Append(andor);
             }
@@ -360,7 +369,9 @@ namespace Snow.Orm
         {
             if (IsKeyCondition) return;
             if (string.IsNullOrWhiteSpace(col)) return;
-            if (OtherCondition.Length > 0)
+            // 如果有左括号,忽略逻辑运算符
+            if (hasParenthesis) { hasParenthesis = false; }
+            else if (OtherCondition.Length > 0)
             {
                 OtherCondition.Append(andor);
             }
@@ -370,17 +381,21 @@ namespace Snow.Orm
         {
             if (IsKeyCondition) return;
             if (string.IsNullOrWhiteSpace(colName) || args == null || args.Length == 0) return;
-            if (OtherCondition.Length > 0)
+            // 如果有左括号,忽略逻辑运算符
+            if (hasParenthesis) { hasParenthesis = false; }
+            else if (OtherCondition.Length > 0)
             {
                 OtherCondition.Append(andor);
             }
-            OtherCondition.Append(string.Concat("(", DB._RestrictPrefix, colName, DB._RestrictPostfix, op, "(", string.Join(",", args), ")"));
+            OtherCondition.Append(string.Concat("(", DB._RestrictPrefix, colName, DB._RestrictPostfix, op, "(", string.Join(",", args), "))"));
         }
         void GetBetweenCondition<T>(string colName, T t1, T t2, string andor = AndOr.And, string op = Op.Between)
         {
             if (IsKeyCondition) return;
             if (string.IsNullOrWhiteSpace(colName) || t1 == null || t2 == null) return;
-            if (OtherCondition.Length > 0)
+            // 如果有左括号,忽略逻辑运算符
+            if (hasParenthesis) { hasParenthesis = false; }
+            else if (OtherCondition.Length > 0)
             {
                 OtherCondition.Append(andor);
             }
@@ -390,7 +405,9 @@ namespace Snow.Orm
         {
             if (IsKeyCondition) return false;
             if (string.IsNullOrWhiteSpace(col) || string.IsNullOrWhiteSpace(val)) return false;
-            if (OtherCondition.Length > 0)
+            // 如果有左括号,忽略逻辑运算符
+            if (hasParenthesis) { hasParenthesis = false; }
+            else if (OtherCondition.Length > 0)
             {
                 OtherCondition.Append(andor);
             }
@@ -399,5 +416,28 @@ namespace Snow.Orm
         }
         #endregion
 
+        #region 括号
+        /// <summary>
+        /// 有左括号
+        /// </summary>
+        bool hasParenthesis = false;
+        public Sql LP()
+        {
+            // 如果有左括号,忽略逻辑运算符
+            if (hasParenthesis) { hasParenthesis = false; }
+            else if (OtherCondition.Length > 0)
+            {
+                OtherCondition.Append(AndOr.And);
+            }
+            OtherCondition.Append(" ( ");
+            hasParenthesis = true;
+            return this;
+        }
+        public Sql RP()
+        {
+            OtherCondition.Append(" ) ");
+            return this;
+        }
+        #endregion
     }
 }
