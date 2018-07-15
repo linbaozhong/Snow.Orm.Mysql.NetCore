@@ -19,7 +19,6 @@ namespace Snow.Orm
                     if (cols == null || cols.Count() == 0) cols = _Columns;
                     foreach (var item in cols)
                     {
-                        //_obj[item] = dr.IsDBNull(i) ? null : dr.GetString(i);
                         _obj[item] = dr.IsDBNull(i) ? null : (dr.GetDataTypeName(i) == "TINYINT" ? dr.GetInt16(i) : dr[i]);
                         i++;
                     }

@@ -39,7 +39,7 @@ namespace Snow.Orm
             }
         }
         static ObjectPool<BaseEntity> pool = new ObjectPool<BaseEntity>(() => { return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) as BaseEntity; },
-            x => { x.Disposed = false; }, 10);
+            x => { x.Disposed = false;x.Clear(); }, 10);
 
         #endregion
 
@@ -123,7 +123,6 @@ namespace Snow.Orm
             if (TryGetValue(name, out _val))
             {
                 if (_val == null) return default(T);
-                //return (T)_val;
                 try { return (T)Convert.ChangeType(_val, typeof(T)); }
                 catch (Exception e) { throw e; }
             }
@@ -131,21 +130,21 @@ namespace Snow.Orm
         }
         #endregion
 
-        [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            foreach (var item in this)
-            {
-                if (item.Value is DateTime)
-                {
-                    info.AddValue(item.Key, item.Value.ToString());
-                }
-                else
-                {
-                    info.AddValue(item.Key, item.Value);
-                }
-            }
-        }
+        //[SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        //{
+        //    foreach (var item in this)
+        //    {
+        //        if (item.Value is DateTime)
+        //        {
+        //            info.AddValue(item.Key, ((DateTime)item.Value).ToString("yyyy-MM-dd HH:mm:ss"));
+        //        }
+        //        else
+        //        {
+        //            info.AddValue(item.Key, item.Value);
+        //        }
+        //    }
+        //}
 
     }
 }
