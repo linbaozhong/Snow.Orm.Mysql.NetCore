@@ -17,7 +17,7 @@ namespace Snow.Orm
             var _Params = new List<DbParameter>();
             foreach (var item in bean)
             {
-                if (_Columns.Contains(item.Key))
+                if (_TColumns.Contains(item.Key))
                 {
                     _Fields.Add(DB.GetName(item.Key));
                     _Values.Add(DB._ParameterPrefix + item.Key);
@@ -52,7 +52,7 @@ namespace Snow.Orm
                 {
                     id = item.Value.ToInt();
                 }
-                else if (_Columns.Contains(item.Key))
+                else if (_TColumns.Contains(item.Key))
                 {
                     _SetColumns.Add(DB.GetCondition(item.Key));
                     _Params.Add(DB.GetParam(item.Key, item.Value));
@@ -81,7 +81,7 @@ namespace Snow.Orm
             foreach (var item in bean)
             {
                 if (item.Key == "ID") continue;
-                if (_Columns.Contains(item.Key))
+                if (_TColumns.Contains(item.Key))
                 {
                     _SetColumns.Add(DB.GetCondition(item.Key));
                     _Params.Add(DB.GetParam(item.Key, item.Value));

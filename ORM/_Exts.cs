@@ -593,5 +593,19 @@ namespace Snow.Orm
             return array.Length;
         }
         #endregion
+
+        public static void Dispose<T>(this T bean,bool disposing)where T:BaseEntity
+        {
+            if (disposing)
+            {
+                bean.Disposed = true;
+                ObjectPool.Put(bean);
+            }
+        }
+        public static void Dispose<T>(this T bean) where T : BaseEntity
+        {
+            bean.Dispose(true);
+        }
+
     }
 }

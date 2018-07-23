@@ -66,7 +66,7 @@ namespace Snow.Orm
         public T GetJson(T bean, params string[] args)
         {
             if (bean == null) return null;
-            if (args.Length == 0) args = _Columns.ToArray();
+            if (args.Length == 0) args = _TColumns.ToArray();
 
             return _GetJson(bean as BaseEntity, args);
         }
@@ -80,7 +80,7 @@ namespace Snow.Orm
         {
             if (list == null || list.Count == 0) return null;
             var _jsons = new List<T>(list.Count);
-            if (args.Length == 0) args = _Columns.ToArray();
+            if (args.Length == 0) args = _TColumns.ToArray();
             for (var i = 0; i < list.Count; i++)
             {
                 var bean = list[i] as BaseEntity;
