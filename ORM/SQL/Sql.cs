@@ -11,6 +11,8 @@ namespace Snow.Orm
     /// </summary>
     public partial class Sql : IDisposable
     {
+        static readonly object _obj = new object();
+
         static ObjectPool<Sql> pool = new ObjectPool<Sql>(() =>
         {
             return new Sql();
@@ -51,10 +53,10 @@ namespace Snow.Orm
         {
             get
             {
-                var _sql = pool.GetObject();
-                //_sql.Disposed = false;
-                return _sql;
-                //return new Sql();
+                lock (_obj)
+                {
+                    return pool.GetObject();
+                }
             }
         }
         public bool Disposed { set; get; } = false;

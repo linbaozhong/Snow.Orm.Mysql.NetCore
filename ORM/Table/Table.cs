@@ -25,13 +25,6 @@ namespace Snow.Orm
         static Dictionary<string, string> _ColumnDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         #endregion
 
-        public T Factory
-        {
-            get
-            {
-                return ObjectPool.Get<T>();
-            }
-        }
         /// <summary>
         /// T 的属性(映射表字段)
         /// </summary>

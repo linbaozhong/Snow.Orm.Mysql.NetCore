@@ -14,25 +14,8 @@ namespace Snow.Orm
     /// 约定:
     ///     键:ID int类型或long类型(通常情况下是自增型字段)
     /// </summary>
-<<<<<<< HEAD
-    public abstract class BaseEntity : Dictionary<string, object>, IPoolable
+    public abstract class BaseEntity : Dictionary<string, object>
     {
-        #region
-        public bool Disposed { set; get; } = false;
-        public void Create() { }
-        public void Reset() { this.Clear(); }
-
-=======
-    public abstract class BaseEntity : Dictionary<string, object>//, IPoolable
-    {
-        #region 对象缓存处理(暂时不可用)
-        //public bool Disposed { set; get; } = false;
-        //public void Create() { }
-        //public void Reset() { }
-        //public void Dispose() {  }
->>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
-        #endregion
-
         /// <summary>
         /// 实体抽象类
         /// </summary>
@@ -119,22 +102,5 @@ namespace Snow.Orm
             return default(T);
         }
         #endregion
-
-        //[SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
-        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
-        //    foreach (var item in this)
-        //    {
-        //        if (item.Value is DateTime)
-        //        {
-        //            info.AddValue(item.Key, ((DateTime)item.Value).ToString("yyyy-MM-dd HH:mm:ss"));
-        //        }
-        //        else
-        //        {
-        //            info.AddValue(item.Key, item.Value);
-        //        }
-        //    }
-        //}
-
     }
 }
