@@ -593,5 +593,6 @@ namespace Snow.Orm
             return array.Length;
         }
         #endregion
+
     }
 }

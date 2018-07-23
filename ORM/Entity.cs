@@ -14,36 +14,15 @@ namespace Snow.Orm
     /// 约定:
     ///     键:ID int类型或long类型(通常情况下是自增型字段)
     /// </summary>
-    public abstract class BaseEntity : Dictionary<string, object>, IDisposable
+    public abstract class BaseEntity : Dictionary<string, object>//, IPoolable
     {
         #region 对象缓存处理(暂时不可用)
-        public bool Disposed { set; get; } = false;
-        public void Dispose() { this.Dispose(true); }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this.Disposed = true;
-                if (pool.PutObject(this))
-                    GC.SuppressFinalize(this);
-            }
-        }
-        public static BaseEntity Factory
-        {
-            get
-            {
-                var _entity = pool.GetObject();
-                _entity.Disposed = false;
-                return _entity;
-            }
-        }
-        static ObjectPool<BaseEntity> pool = new ObjectPool<BaseEntity>(() => { return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) as BaseEntity; },
-            x => { x.Disposed = false;x.Clear(); }, 10);
-
+        //public bool Disposed { set; get; } = false;
+        //public void Create() { }
+        //public void Reset() { }
+        //public void Dispose() {  }
         #endregion
 
-        //protected string TableName;
         /// <summary>
         /// 实体抽象类
         /// </summary>

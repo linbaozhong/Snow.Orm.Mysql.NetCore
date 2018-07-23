@@ -228,7 +228,7 @@ namespace Snow.Orm
         /// <returns></returns>
         public List<T> GetCaches(Sql cond)
         {
-            var args = cond.Columns.ToArray();
+            var args = cond == null ? new string[0] : cond.Columns.ToArray();
             var ids = GetCacheIds(cond);
             if (ids == null) return null;
             var _list = new List<T>();

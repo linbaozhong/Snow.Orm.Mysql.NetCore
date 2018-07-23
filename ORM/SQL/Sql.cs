@@ -32,23 +32,6 @@ namespace Snow.Orm
             x.Params.Clear();
         }, 100);
 
-        //public void ResetAction()
-        //{
-        //    _Columns.Clear();
-        //    _GroupBy = string.Empty;
-        //    _Having = string.Empty;
-        //    _Join.Clear();
-        //    _OmitColumns.Clear();
-        //    _OrderBy.Clear();
-        //    _SetColumns.Clear();
-        //    Array.Clear(_Page, 0, _Page.Length);
-        //    IDCondition.Clear();
-        //    OtherCondition.Clear();
-        //    IsKeyCondition = false;
-        //    OtherCondition.Clear();
-        //    ShowSQL = false;
-        //    Params.Clear();
-        //}
         public void Dispose()
         {
             this.Dispose(true);
@@ -69,7 +52,7 @@ namespace Snow.Orm
             get
             {
                 var _sql = pool.GetObject();
-                _sql.Disposed = false;
+                //_sql.Disposed = false;
                 return _sql;
                 //return new Sql();
             }
