@@ -13,7 +13,7 @@ namespace Snow.Orm
         /// ConcurrentBag<T> 的所有公共且受保护的成员都是线程安全的  
         /// 可从多个线程同时使用。  
         /// </summary>  
-        ConcurrentBag<T> buffer;
+        ConcurrentQueue<T> buffer;
         Func<T> creatFunc;
         Action<T> resetFunc;
         public int capacity { get; private set; }
@@ -21,7 +21,7 @@ namespace Snow.Orm
 
         public ObjectPool(Func<T> creatFunc, Action<T> resetFunc, int capacity)
         {
-            this.buffer = new ConcurrentBag<T>();
+            this.buffer = new ConcurrentQueue<T>();
             this.creatFunc = creatFunc;
             this.resetFunc = resetFunc;
             this.capacity = capacity;
@@ -35,8 +35,9 @@ namespace Snow.Orm
         public T GetObject()
         {
             T obj;
-            if (buffer.TryTake(out obj))
+            if (buffer.TryDequeue(out obj))
             {
+                resetFunc.Invoke(obj);
                 return obj;
             }
             else
@@ -49,8 +50,9 @@ namespace Snow.Orm
                 return false;
             }
             resetFunc.Invoke(obj);
-            buffer.Add(obj);
+            buffer.Enqueue(obj);
             return true;
+            //return false;
         }
     }
 
@@ -75,7 +77,10 @@ namespace Snow.Orm
     {
         private static ConcurrentDictionary<System.Type, PoolableObject> pools = new ConcurrentDictionary<Type, PoolableObject>();
 
+<<<<<<< HEAD
         #region Get
+=======
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
         public static T Get<T>() where T : IPoolable, new()
         {
             T x = default(T);
@@ -102,9 +107,12 @@ namespace Snow.Orm
             return x;
         }
 
+<<<<<<< HEAD
         #endregion
 
         #region PutObject
+=======
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
         public static void Put<T>(T obj) where T : IPoolable
         {
             var t = typeof(T);
@@ -112,9 +120,13 @@ namespace Snow.Orm
             if (pools.TryGetValue(t, out po))
             {
                 if (po.Push(obj))
+<<<<<<< HEAD
                 {
                     GC.SuppressFinalize(obj);
                 }
+=======
+                    GC.SuppressFinalize(obj);
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
             }
             else
             {
@@ -122,10 +134,13 @@ namespace Snow.Orm
             }
         }
 
+<<<<<<< HEAD
         #endregion
 
         #region Clear
 
+=======
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
         public static void Clear()
         {
             lock (pools)
@@ -138,6 +153,7 @@ namespace Snow.Orm
                 pools.Clear();
             }
         }
+<<<<<<< HEAD
         #endregion
 
     }
@@ -152,21 +168,39 @@ namespace Snow.Orm
         #endregion
 
         #region Ctor
+=======
+    }
+    #endregion
+    #region PoolableObject
+    public class PoolableObject
+    {
+        private ConcurrentStack<IPoolable> pool;
+        private int capacity;
+
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
         public PoolableObject(int capacity)
         {
             pool = new ConcurrentStack<IPoolable>();
             this.capacity = capacity;
         }
+<<<<<<< HEAD
         #endregion
 
         #region Properties
+=======
+
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
         public Int32 Count
         {
             get { return pool.Count; }
         }
+<<<<<<< HEAD
         #endregion
 
         #region Pop
+=======
+
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
         public IPoolable Pop()
         {
             IPoolable obj;
@@ -177,9 +211,13 @@ namespace Snow.Orm
 
             return null;
         }
+<<<<<<< HEAD
         #endregion
 
         #region Push
+=======
+
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
         public bool Push(IPoolable obj)
         {
             if (obj == null)
@@ -193,14 +231,33 @@ namespace Snow.Orm
             }
             return false;
         }
+<<<<<<< HEAD
         #endregion
 
         #region Clear
+=======
+
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
         public void Clear()
         {
             pool.Clear();
         }
+<<<<<<< HEAD
         #endregion
     }
+=======
+    }
+
+    #region 对象缓存处理(暂时不可用)
+    //public static partial class _Exts
+    //{
+    //    public static void Dispose<T>(this T bean) where T : BaseEntity, IPoolable
+    //    {
+    //        bean.Disposed = true;
+    //        ObjectPool.Put(bean);
+    //    }
+    //}
+    #endregion
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
     #endregion
 }

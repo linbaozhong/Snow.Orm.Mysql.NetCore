@@ -14,6 +14,7 @@ namespace Snow.Orm
     /// 约定:
     ///     键:ID int类型或long类型(通常情况下是自增型字段)
     /// </summary>
+<<<<<<< HEAD
     public abstract class BaseEntity : Dictionary<string, object>, IPoolable
     {
         #region
@@ -21,6 +22,15 @@ namespace Snow.Orm
         public void Create() { }
         public void Reset() { this.Clear(); }
 
+=======
+    public abstract class BaseEntity : Dictionary<string, object>//, IPoolable
+    {
+        #region 对象缓存处理(暂时不可用)
+        //public bool Disposed { set; get; } = false;
+        //public void Create() { }
+        //public void Reset() { }
+        //public void Dispose() {  }
+>>>>>>> 2dd96190f51adce19dcc96baddbb00e12584040c
         #endregion
 
         /// <summary>

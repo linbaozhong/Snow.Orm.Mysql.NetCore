@@ -155,9 +155,9 @@ namespace Snow.Orm
             if (timeout > 0) this.TimeOut = timeout;
         }
 
-        private DbCommand Command() { return new MySqlCommand(); }
-        private DbConnection Connection() { return new MySqlConnection(); }
-        private DbDataAdapter DataAdapter() { return new MySqlDataAdapter(); }
+        private MySqlCommand Command() { return new MySqlCommand(); }
+        private MySqlConnection Connection() { return new MySqlConnection(); }
+        private MySqlDataAdapter DataAdapter() { return new MySqlDataAdapter(); }
 
         public const string _ParameterPrefix = "@";
         public const string _RestrictPrefix = "`";
@@ -301,16 +301,20 @@ namespace Snow.Orm
         {
             if (sql == null || sql.Length < 3) return null;
 
-            DbCommand cmd = this.Command();
+            MySqlCommand cmd = this.Command();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = sql;
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
             cmd.Connection = this.Connection();
             cmd.Connection.ConnectionString = ReadConnStr;
 
+
             if (parames != null)
             {
-                foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+                foreach (MySqlParameter param in parames)
+                {
+                    cmd.Parameters.Add(param);
+                }
             }
 
             DbDataReader dr = null;
@@ -322,6 +326,7 @@ namespace Snow.Orm
             }
             catch (Exception e)
             {
+                Log.Debug(DB.Debug(sql, parames));
                 if (dr != null && !dr.IsClosed) dr.Close();
                 throw e;
             }
@@ -330,7 +335,7 @@ namespace Snow.Orm
         {
             if (sql == null || sql.Length < 3) return null;
 
-            DbCommand cmd = this.Command();
+            MySqlCommand cmd = this.Command();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = sql;
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
@@ -356,7 +361,7 @@ namespace Snow.Orm
         {
             if (sql == null || sql.Length < 3) return null;
 
-            DbCommand cmd = this.Command();
+            MySqlCommand cmd = this.Command();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = sql;
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
@@ -365,7 +370,7 @@ namespace Snow.Orm
 
             if (parame != null)
             {
-                 cmd.Parameters.Add(parame);
+                cmd.Parameters.Add(parame);
             }
 
             try
@@ -388,7 +393,7 @@ namespace Snow.Orm
         {
             if (sql == null || sql.Length < 3) return null;
 
-            DbCommand cmd = Command();
+            MySqlCommand cmd = Command();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = sql;
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
@@ -425,7 +430,7 @@ namespace Snow.Orm
         {
             if (sql == null || sql.Length < 3) return null;
 
-            DbCommand cmd = this.Command();
+            MySqlCommand cmd = this.Command();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = sql;
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
@@ -473,7 +478,7 @@ namespace Snow.Orm
         public bool Write(string sql, DbParameter param = null)
         {
             if (sql == null || sql.Length < 3) return false;
-            DbCommand cmd = this.Command();
+            MySqlCommand cmd = this.Command();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = sql;
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
@@ -508,7 +513,7 @@ namespace Snow.Orm
         public bool Write(string sql, List<DbParameter> parames)
         {
             if (sql == null || sql.Length < 3) return false;
-            DbCommand cmd = this.Command();
+            MySqlCommand cmd = this.Command();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = sql;
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
@@ -552,7 +557,7 @@ namespace Snow.Orm
             {
                 return false;
             }
-            DbCommand cmd = this.Command();
+            MySqlCommand cmd = this.Command();
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.CommandText = proc;
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
@@ -588,7 +593,7 @@ namespace Snow.Orm
 		internal bool Insert(string sql, List<DbParameter> parames, ref long id)
         {
             if (sql == null || parames == null || sql.Length < 3 || parames.Count < 1) return false;
-            DbCommand cmd = this.Command();
+            MySqlCommand cmd = this.Command();
             foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
             if (cmd.Parameters.Count < 1) return false;
             cmd.CommandType = CommandType.Text;
@@ -735,7 +740,7 @@ namespace Snow.Orm
         public bool ExecTrans(List<SqlCommand> sqls)
         {
             if (sqls == null) return false;
-            DbCommand cmd = this.Command();
+            MySqlCommand cmd = this.Command();
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
             cmd.Connection = this.Connection();
             cmd.Connection.ConnectionString = WriteConnStr;
