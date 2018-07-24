@@ -51,10 +51,10 @@ namespace Snow.Orm
         {
             get
             {
-                var _sql = pool.GetObject();
-                //_sql.Disposed = false;
-                return _sql;
-                //return new Sql();
+                lock (pool)
+                {
+                    return pool.GetObject();
+                }
             }
         }
         public bool Disposed { set; get; } = false;
