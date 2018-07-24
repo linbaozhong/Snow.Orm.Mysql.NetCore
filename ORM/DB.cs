@@ -307,26 +307,22 @@ namespace Snow.Orm
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
             cmd.Connection = this.Connection();
             cmd.Connection.ConnectionString = ReadConnStr;
-
-
-            if (parames != null)
-            {
-                foreach (MySqlParameter param in parames)
-                {
-                    cmd.Parameters.Add(param);
-                }
-            }
-
             DbDataReader dr = null;
             try
             {
+                if (parames != null)
+                {
+                    foreach (MySqlParameter param in parames)
+                    {
+                        cmd.Parameters.Add(param);
+                    }
+                }
                 cmd.Connection.Open();
                 dr = cmd.ExecuteReader(CommandBehavior.CloseConnection);
                 return dr;
             }
             catch (Exception e)
             {
-                Log.Debug(DB.Debug(sql, parames));
                 if (dr != null && !dr.IsClosed) dr.Close();
                 throw e;
             }
@@ -342,19 +338,23 @@ namespace Snow.Orm
             cmd.Connection = this.Connection();
             cmd.Connection.ConnectionString = ReadConnStr;
 
-            if (parames != null)
-            {
-                foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
-            }
-
             try
             {
+                if (parames != null)
+                {
+                    foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+                }
                 cmd.Connection.Open();
                 return cmd.ExecuteScalar();
             }
             catch (Exception e)
             {
                 throw e;
+            }
+            finally
+            {
+                if (cmd.Connection != null) cmd.Connection.Close();
+                cmd.Dispose();
             }
         }
         public object ReadSingle(string sql, DbParameter parame = null)
@@ -437,17 +437,16 @@ namespace Snow.Orm
             cmd.Connection = this.Connection();
             cmd.Connection.ConnectionString = ReadConnStr;
 
-            if (parames != null)
-            {
-                foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
-            }
-
             DbDataAdapter dap = DataAdapter();
             dap.SelectCommand = cmd;
 
             DataTable tb = new DataTable();
             try
             {
+                if (parames != null)
+                {
+                    foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+                }
                 dap.Fill(tb);
                 if (tb.Rows.Count > 0) return tb;
                 tb.Dispose();
@@ -519,12 +518,12 @@ namespace Snow.Orm
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
             cmd.Connection = this.Connection();
             cmd.Connection.ConnectionString = WriteConnStr;
-            if (parames != null)
-            {
-                foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
-            }
             try
             {
+                if (parames != null)
+                {
+                    foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+                }
                 cmd.Connection.Open();
                 cmd.ExecuteNonQuery();
                 return true;
@@ -563,12 +562,12 @@ namespace Snow.Orm
             if (TimeOut > 0) cmd.CommandTimeout = (int)TimeOut;
             cmd.Connection = this.Connection();
             cmd.Connection.ConnectionString = WriteConnStr;
-            if (parames != null)
-            {
-                foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
-            }
             try
             {
+                if (parames != null)
+                {
+                    foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+                }
                 cmd.Connection.Open();
                 cmd.ExecuteNonQuery();
                 returnVal = (int)cmd.Parameters["p_return"].Value;
