@@ -16,7 +16,7 @@ namespace Snow.Orm
                 {
                     var _obj = new T() as BaseEntity;
                     var i = 0;
-                    if (cols == null || cols.Count() == 0) cols = _Columns;
+                    if (cols == null || cols.Count() == 0) cols = _TColumns;
                     foreach (var item in cols)
                     {
                         _obj[item] = dr.IsDBNull(i) ? null : (dr.GetDataTypeName(i) == "TINYINT" ? dr.GetInt16(i) : dr[i]);
@@ -35,7 +35,7 @@ namespace Snow.Orm
                 if (dr.HasRows)
                 {
                     var _list = new List<T>();
-                    if (cols == null || cols.Count() == 0) cols = _Columns;
+                    if (cols == null || cols.Count() == 0) cols = _TColumns;
                     while (dr.Read())
                     {
                         var _obj = new T() as BaseEntity;

@@ -14,20 +14,14 @@ namespace Snow.Orm
     /// 约定:
     ///     键:ID int类型或long类型(通常情况下是自增型字段)
     /// </summary>
-    public abstract class BaseEntity : Dictionary<string, object>//, IPoolable
+    public abstract class BaseEntity : Dictionary<string, object>
     {
-        #region 对象缓存处理(暂时不可用)
-        //public bool Disposed { set; get; } = false;
-        //public void Create() { }
-        //public void Reset() { }
-        //public void Dispose() {  }
-        #endregion
-
         /// <summary>
         /// 实体抽象类
         /// </summary>
         public BaseEntity() : base(StringComparer.OrdinalIgnoreCase) { }
-        public new object this[string key]
+
+        protected new object this[string key]
         {
             set { base[key] = value; }
             get
@@ -43,33 +37,33 @@ namespace Snow.Orm
         /// <param name="key">键</param>
         /// <param name="value">值</param>
         /// <returns></returns>
-        public new BaseEntity Add(string key, object value)
+        protected new BaseEntity Add(string key, object value)
         {
             base[key] = value;
             return this;
         }
 
         #region 事件
-        /// <summary>
-        /// 属性改变事件处理句柄
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected delegate void PropertyChangedHandler(object sender, PropertyChangedEventArgs e);
+        ///// <summary>
+        ///// 属性改变事件处理句柄
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        //protected delegate void PropertyChangedHandler(object sender, PropertyChangedEventArgs e);
 
-        /// <summary>
-        /// 属性委托处理句柄
-        /// </summary>
-        private PropertyChangedHandler _OnPropertyChanged = null;
+        ///// <summary>
+        ///// 属性委托处理句柄
+        ///// </summary>
+        //private PropertyChangedHandler _OnPropertyChanged = null;
 
-        /// <summary>
-        /// 对象属性改变时发生事件
-        /// </summary>
-        protected event PropertyChangedHandler OnPropertyChanged
-        {
-            add { _OnPropertyChanged += value; }
-            remove { _OnPropertyChanged -= value; }
-        }
+        ///// <summary>
+        ///// 对象属性改变时发生事件
+        ///// </summary>
+        //protected event PropertyChangedHandler OnPropertyChanged
+        //{
+        //    add { _OnPropertyChanged += value; }
+        //    remove { _OnPropertyChanged -= value; }
+        //}
         #endregion
 
         #region 扩展方法
@@ -83,12 +77,12 @@ namespace Snow.Orm
         protected void Set<T>(T value, [CallerMemberName]string name = null)
         {
             this[name] = value;
-            //属性改变事件
-            if (_OnPropertyChanged != null)
-            {
-                PropertyChangedEventArgs e = new PropertyChangedEventArgs(name);
-                _OnPropertyChanged(this, e);
-            }
+            ////属性改变事件
+            //if (_OnPropertyChanged != null)
+            //{
+            //    PropertyChangedEventArgs e = new PropertyChangedEventArgs(name);
+            //    _OnPropertyChanged(this, e);
+            //}
         }
         /// <summary>
         /// 读取器
@@ -108,22 +102,5 @@ namespace Snow.Orm
             return default(T);
         }
         #endregion
-
-        //[SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
-        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
-        //    foreach (var item in this)
-        //    {
-        //        if (item.Value is DateTime)
-        //        {
-        //            info.AddValue(item.Key, ((DateTime)item.Value).ToString("yyyy-MM-dd HH:mm:ss"));
-        //        }
-        //        else
-        //        {
-        //            info.AddValue(item.Key, item.Value);
-        //        }
-        //    }
-        //}
-
     }
 }

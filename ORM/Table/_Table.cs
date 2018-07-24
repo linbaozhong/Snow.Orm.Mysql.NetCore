@@ -51,7 +51,7 @@ namespace Snow.Orm
             foreach (var arg in args)
             {
                 //_index = _Columns.IndexOf(arg);
-                if (_Columns.Contains(arg))
+                if (_TColumns.Contains(arg))
                 {
                     _strings.Add(DB.GetName(arg));   // 聚合函数
                     continue;

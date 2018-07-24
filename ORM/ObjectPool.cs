@@ -77,6 +77,7 @@ namespace Snow.Orm
     {
         private static ConcurrentDictionary<System.Type, PoolableObject> pools = new ConcurrentDictionary<Type, PoolableObject>();
 
+        #region Get
         public static T Get<T>() where T : IPoolable, new()
         {
             T x = default(T);
@@ -103,6 +104,10 @@ namespace Snow.Orm
             return x;
         }
 
+        #endregion
+
+        #region PutObject
+
         public static void Put<T>(T obj) where T : IPoolable
         {
             var t = typeof(T);
@@ -118,6 +123,10 @@ namespace Snow.Orm
             }
         }
 
+        #endregion
+
+        #region Clear
+
         public static void Clear()
         {
             lock (pools)
@@ -130,8 +139,13 @@ namespace Snow.Orm
                 pools.Clear();
             }
         }
+
+        #endregion
+
     }
     #endregion
+
+
     #region PoolableObject
     public class PoolableObject
     {
@@ -144,11 +158,17 @@ namespace Snow.Orm
             this.capacity = capacity;
         }
 
+
+        #region Properties
+
         public Int32 Count
         {
             get { return pool.Count; }
         }
 
+        #endregion
+
+        #region Pop
         public IPoolable Pop()
         {
             IPoolable obj;
@@ -160,6 +180,9 @@ namespace Snow.Orm
             return null;
         }
 
+        #endregion
+
+        #region Push
         public bool Push(IPoolable obj)
         {
             if (obj == null)
@@ -173,22 +196,15 @@ namespace Snow.Orm
             }
             return false;
         }
+        #endregion
+
+        #region Clear
 
         public void Clear()
         {
             pool.Clear();
         }
+        #endregion
     }
-
-    #region 对象缓存处理(暂时不可用)
-    //public static partial class _Exts
-    //{
-    //    public static void Dispose<T>(this T bean) where T : BaseEntity, IPoolable
-    //    {
-    //        bean.Disposed = true;
-    //        ObjectPool.Put(bean);
-    //    }
-    //}
-    #endregion
     #endregion
 }

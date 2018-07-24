@@ -27,7 +27,7 @@ namespace Snow.Orm
             {
                 throw new Exception("数据库操作命令不能为空");
             }
-            var cmd = DB.GetRawSql(sqlString, args);
+            var cmd = DB.GetRawSql(" " + sqlString + " ", args);
             if (cmd.SqlParams != null) Params.AddRange(cmd.SqlParams);
             // 如果有左括号,忽略逻辑运算符
             if (hasParenthesis) { hasParenthesis = false; }

@@ -26,9 +26,9 @@ namespace Snow.Orm
         #endregion
 
         /// <summary>
-        /// T 属性(表字段)
+        /// T 的属性(映射表字段)
         /// </summary>
-        protected static List<string> _Columns = new List<string>();
+        protected static List<string> _TColumns = new List<string>();
 
         /// <summary>
         /// 数据库表名
@@ -71,11 +71,11 @@ namespace Snow.Orm
                     attr = objAttr as OrmColumnAttribute;
                     _jsonName = string.IsNullOrWhiteSpace(attr.JsonName) ? _colName : attr.JsonName;
                 }
-                _Columns.Add(_colName);
+                _TColumns.Add(_colName);
                 _ColumnDictionary.Add(_colName, _jsonName);
             }
 
-            SelectColumnString = GetSelectColumnString(_Columns);
+            SelectColumnString = GetSelectColumnString(_TColumns);
 
             switch (type)
             {
