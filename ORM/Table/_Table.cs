@@ -47,10 +47,8 @@ namespace Snow.Orm
             if (SelectColumns.TryGetValue(_key, out _selectColumns)) return _selectColumns;
 
             var _strings = new List<string>();
-            //var _index = -1;
             foreach (var arg in args)
             {
-                //_index = _Columns.IndexOf(arg);
                 if (_TColumns.Contains(arg))
                 {
                     _strings.Add(DB.GetName(arg));   // 聚合函数
