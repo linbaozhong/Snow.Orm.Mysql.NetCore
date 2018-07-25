@@ -15,10 +15,6 @@ namespace Snow.Orm
     {
         public class SqlCommand
         {
-            //public SqlCommand() { }
-            //public SqlCommand(string sql) { this.SqlString = sql; }
-            //public SqlCommand(string sql, List<DbParameter> parames) { this.SqlString = sql; this.SqlParams = parames; }
-
             public string SqlString { set; get; }
             public List<DbParameter> SqlParams = new List<DbParameter>();
         }

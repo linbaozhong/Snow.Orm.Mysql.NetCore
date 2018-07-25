@@ -37,7 +37,7 @@ namespace Snow.Orm
             T obj;
             if (buffer.TryDequeue(out obj))
             {
-                //resetFunc.Invoke(obj);
+                resetFunc(obj);
                 return obj;
             }
             else
