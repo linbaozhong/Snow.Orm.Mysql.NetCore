@@ -320,6 +320,9 @@ namespace Snow.Orm
             catch (Exception e)
             {
                 if (dr != null && !dr.IsClosed) dr.Close();
+#if DEBUG
+                Log.Debug(Debug(sql, parames));
+#endif
                 throw e;
             }
         }
@@ -345,6 +348,9 @@ namespace Snow.Orm
             }
             catch (Exception e)
             {
+#if DEBUG
+                Log.Debug(Debug(sql, parames));
+#endif
                 throw e;
             }
             finally
@@ -353,7 +359,7 @@ namespace Snow.Orm
                 cmd.Dispose();
             }
         }
-        public object ReadSingle(string sql, DbParameter parame = null)
+        public object ReadSingle(string sql, DbParameter param = null)
         {
             if (sql == null || sql.Length < 3) return null;
 
@@ -364,9 +370,9 @@ namespace Snow.Orm
             cmd.Connection = this.Connection();
             cmd.Connection.ConnectionString = ReadConnStr;
 
-            if (parame != null)
+            if (param != null)
             {
-                cmd.Parameters.Add(parame);
+                cmd.Parameters.Add(param);
             }
 
             try
@@ -376,7 +382,13 @@ namespace Snow.Orm
             }
             catch (Exception e)
             {
+#if DEBUG
+                Log.Debug(Debug(sql, param));
+#endif
                 throw e;
+            }
+            finally
+            {
             }
         }
         /// <summary>
@@ -410,6 +422,9 @@ namespace Snow.Orm
             catch
             {
                 tb.Dispose();
+#if DEBUG
+                Log.Debug(Debug(sql, param));
+#endif
                 throw;
             }
             finally
@@ -451,6 +466,9 @@ namespace Snow.Orm
             catch
             {
                 tb.Dispose();
+#if DEBUG
+                Log.Debug(Debug(sql, parames));
+#endif
                 throw;
             }
             finally
@@ -488,6 +506,9 @@ namespace Snow.Orm
             }
             catch
             {
+#if DEBUG
+                Log.Debug(Debug(sql, param));
+#endif
                 throw;
             }
             finally
@@ -526,6 +547,9 @@ namespace Snow.Orm
             }
             catch
             {
+#if DEBUG
+                Log.Debug(Debug(sql, parames));
+#endif
                 throw;
             }
             finally
@@ -571,6 +595,9 @@ namespace Snow.Orm
             }
             catch
             {
+#if DEBUG
+                Log.Debug(Debug(proc, parames));
+#endif
                 throw;
             }
             finally
@@ -611,6 +638,9 @@ namespace Snow.Orm
             }
             catch
             {
+#if DEBUG
+                Log.Debug(Debug(sql, parames));
+#endif
                 throw;
             }
             finally
@@ -635,7 +665,6 @@ namespace Snow.Orm
             catch (Exception) { throw; }
             finally
             {
-                //if (IsDebug) ShowSqlString(sql, Params);
             }
         }
         /// <summary>
@@ -652,7 +681,6 @@ namespace Snow.Orm
             catch (Exception) { throw; }
             finally
             {
-                //if (IsDebug) ShowSqlString(sql, Params);
             }
         }
         /// <summary>
@@ -791,20 +819,6 @@ namespace Snow.Orm
                     cmd.Dispose();
                 }
             }
-        }
-        #endregion
-
-
-        #region 调试时打印SQL字符串
-        public void ShowSqlString(string sql, List<DbParameter> parames)
-        {
-            if (Log == null) return;
-            Log.Debug(Debug(sql, parames));
-        }
-        public void ShowSqlString(string sql, DbParameter parame = null)
-        {
-            if (Log == null) return;
-            Log.Debug(Debug(sql, parame));
         }
         #endregion
     }

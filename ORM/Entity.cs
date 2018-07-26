@@ -21,7 +21,7 @@ namespace Snow.Orm
         /// </summary>
         public BaseEntity() : base(StringComparer.OrdinalIgnoreCase) { }
 
-        protected new object this[string key]
+        public new object this[string key]
         {
             set { base[key] = value; }
             get
@@ -37,7 +37,7 @@ namespace Snow.Orm
         /// <param name="key">键</param>
         /// <param name="value">值</param>
         /// <returns></returns>
-        protected new BaseEntity Add(string key, object value)
+        public new BaseEntity Add(string key, object value)
         {
             base[key] = value;
             return this;
@@ -76,7 +76,7 @@ namespace Snow.Orm
         /// <param name="name"></param>
         protected void Set<T>(T value, [CallerMemberName]string name = null)
         {
-            this[name] = value;
+            base[name] = value;
             ////属性改变事件
             //if (_OnPropertyChanged != null)
             //{

@@ -28,7 +28,7 @@ namespace Snow.Orm
             if (bean == null) return null;
             if (args.Length == 0) return _Clone(bean);
 
-            return _Get(bean as BaseEntity, args);
+            return _Get(bean, args);
         }
         /// <summary>
         /// 获取一个LIST的指定列
@@ -43,12 +43,12 @@ namespace Snow.Orm
             var _jsons = new List<T>(list.Count);
             for (var j = 0; j < list.Count; j++)
             {
-                var bean = list[j] as BaseEntity;
+                var bean = list[j] as T;
                 _jsons.Add(_Get(bean, args));
             }
             return _jsons;
         }
-        T _Get(BaseEntity bean, IEnumerable<string> args)
+        T _Get(T bean, IEnumerable<string> args)
         {
             var _json = new T() as BaseEntity;
             foreach (var key in args)
