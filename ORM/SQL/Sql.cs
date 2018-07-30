@@ -18,22 +18,38 @@ namespace Snow.Orm
             return new Sql();
         }, x =>
         {
-            x.Disposed = false;
-            x._Columns.Clear();
-            x._GroupBy = string.Empty;
-            x._Having = string.Empty;
-            x._Join.Clear();
-            x._OmitColumns.Clear();
-            x._OrderBy.Clear();
-            x._SetColumns.Clear();
-            Array.Clear(x._Page, 0, x._Page.Length);
-            x.IDCondition.Clear();
-            x.OtherCondition.Clear();
-            x.IsKeyCondition = false;
-            x.OtherCondition.Clear();
-            x.Params.Clear();
+            //x.Disposed = false;
+            //x._Columns.Clear();
+            //x._GroupBy = string.Empty;
+            //x._Having = string.Empty;
+            //x._Join.Clear();
+            //x._OmitColumns.Clear();
+            //x._OrderBy.Clear();
+            //x._SetColumns.Clear();
+            //Array.Clear(x._Page, 0, x._Page.Length);
+            //x.IDCondition.Clear();
+            //x.OtherCondition.Clear();
+            //x.IsKeyCondition = false;
+            //x.OtherCondition.Clear();
+            //x.Params.Clear();
         }, 100);
 
+        void reset()
+        {
+            this._Columns.Clear();
+            this._GroupBy = string.Empty;
+            this._Having = string.Empty;
+            this._Join.Clear();
+            this._OmitColumns.Clear();
+            this._OrderBy.Clear();
+            this._SetColumns.Clear();
+            Array.Clear(this._Page, 0, this._Page.Length);
+            this.IDCondition.Clear();
+            this.OtherCondition.Clear();
+            this.IsKeyCondition = false;
+            this.OtherCondition.Clear();
+            this.Params.Clear();
+        }
         public void Dispose()
         {
             this.Dispose(true);
@@ -41,11 +57,11 @@ namespace Snow.Orm
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && pool.PutObject(this))
             {
                 this.Disposed = true;
-                if (pool.PutObject(this))
-                    GC.SuppressFinalize(this);
+                this.reset();
+                GC.SuppressFinalize(this);
             }
         }
 
@@ -55,7 +71,10 @@ namespace Snow.Orm
             {
                 lock (_obj)
                 {
-                    return pool.GetObject();
+                    var obj = pool.GetObject();
+                    obj.Disposed = false;
+                    obj.reset();
+                    return obj;
                 }
             }
         }

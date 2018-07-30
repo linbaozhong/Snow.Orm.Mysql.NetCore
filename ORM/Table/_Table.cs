@@ -124,8 +124,9 @@ namespace Snow.Orm
             if (cond.Params != null)
             {
                 string s = null;
-                foreach (DbParameter p in cond.Params)
+                for (int i = 0; i < cond.Params.Count; i++)
                 {
+                    var p = cond.Params[i];
                     if (p == null || p.Value == null) continue;
                     s = p.Value.ToString();
                     ck.Append(p.ParameterName);

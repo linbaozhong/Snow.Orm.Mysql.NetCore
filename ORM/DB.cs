@@ -53,8 +53,9 @@ namespace Snow.Orm
             string s = null;
             if (parames != null)
             {
-                foreach (MySqlParameter p in parames)
+                for (int i = 0; i < parames.Count; i++)
                 {
+                    var p = parames[i];
                     if (p == null || p.Value == null) continue;
                     s = p.Value.ToString();
                     mess.Append(p.ParameterName);
@@ -62,6 +63,7 @@ namespace Snow.Orm
                     if (s != null && s.Length > 3000) mess.AppendLine(s.Substring(0, 3000));
                     else mess.AppendLine(s);
                 }
+
             }
             return mess.ToString();
         }
@@ -308,10 +310,7 @@ namespace Snow.Orm
             {
                 if (parames != null)
                 {
-                    foreach (MySqlParameter param in parames)
-                    {
-                        cmd.Parameters.Add(param);
-                    }
+                    for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
                 }
                 cmd.Connection.Open();
                 dr = cmd.ExecuteReader(CommandBehavior.CloseConnection);
@@ -341,7 +340,7 @@ namespace Snow.Orm
             {
                 if (parames != null)
                 {
-                    foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+                    for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
                 }
                 cmd.Connection.Open();
                 return cmd.ExecuteScalar();
@@ -456,7 +455,7 @@ namespace Snow.Orm
             {
                 if (parames != null)
                 {
-                    foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+                    for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
                 }
                 dap.Fill(tb);
                 if (tb.Rows.Count > 0) return tb;
@@ -539,7 +538,7 @@ namespace Snow.Orm
             {
                 if (parames != null)
                 {
-                    foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+                    for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
                 }
                 cmd.Connection.Open();
                 cmd.ExecuteNonQuery();
@@ -586,7 +585,7 @@ namespace Snow.Orm
             {
                 if (parames != null)
                 {
-                    foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+                    for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
                 }
                 cmd.Connection.Open();
                 cmd.ExecuteNonQuery();
@@ -616,7 +615,8 @@ namespace Snow.Orm
         {
             if (sql == null || parames == null || sql.Length < 3 || parames.Count < 1) return false;
             MySqlCommand cmd = this.Command();
-            foreach (MySqlParameter param in parames) { cmd.Parameters.Add(param); }
+            for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
+
             if (cmd.Parameters.Count < 1) return false;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = sql;
@@ -624,29 +624,35 @@ namespace Snow.Orm
             cmd.Connection = this.Connection();
             cmd.Connection.ConnectionString = WriteConnStr;
 
-            DbDataReader dr = null;
-            try
-            {
-                cmd.Connection.Open();
-                dr = cmd.ExecuteReader(CommandBehavior.CloseConnection);
-                if (dr.Read())
-                {
-                    id = dr[1].ToLong(-1);
-                    return dr[0].ToInt() > 0;
-                }
-                return false;
-            }
-            catch
+            var dap = this.DataAdapter();
+            dap.SelectCommand = cmd;
+            var tb = new DataTable();
+            try { dap.Fill(tb); }
+            catch (Exception e)
             {
 #if DEBUG
-                Log.Debug(Debug(sql, parames));
+                Log.Debug(Debug(sql, parames),e);
 #endif
-                throw;
+                tb.Dispose();
+                return false;
             }
             finally
             {
-                if (dr != null && !dr.IsClosed) dr.Close();
+                if (cmd != null)
+                {
+                    if (cmd.Connection != null) cmd.Connection.Close();
+                    cmd.Dispose();
+                }
+                if (dap != null) dap.Dispose();
             }
+            if (tb == null || tb.Rows.Count < 1 || tb.Columns.Count < 2) return false;
+            var num = tb.Rows[0][0].ToInt(0);
+            id = tb.Rows[0][1].ToInt(-1);
+            tb.Dispose();
+            if (id > 0) return true;
+            if (num > 0) return true;
+            return false;
+
         }
 
         #region 原生SQL
@@ -782,7 +788,8 @@ namespace Snow.Orm
                     }
                     cmd.CommandText = sql.SqlString;
                     cmd.Parameters.Clear();
-                    if (sql.SqlParams != null) foreach (MySqlParameter param in sql.SqlParams) { cmd.Parameters.Add(param); }
+                    if (sql.SqlParams != null)
+                        for (int i = 0; i < sql.SqlParams.Count; i++) { cmd.Parameters.Add(sql.SqlParams[i]); }
 
                     if (sql.SqlParams.Contains(LastIdParameter))
                     {
