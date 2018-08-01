@@ -11,13 +11,12 @@ namespace Snow.Orm
         /// <summary>
         /// 包含列
         /// </summary>
-        protected List<string> _Columns = new List<string>();
+        public List<string> Columns = new List<string>();
         /// <summary>
         /// 排除列
         /// </summary>
-        protected List<string> _OmitColumns = new List<string>();
+        public List<string> OmitColumns = new List<string>();
 
-        public List<string> Columns { get { return _Columns; } }
         /// <summary>
         /// 包含列
         /// </summary>
@@ -25,13 +24,13 @@ namespace Snow.Orm
         /// <returns></returns>
         public Sql Cols(params string[] cols)
         {
-            if (cols == null || _OmitColumns.Count > 0)
+            if (cols == null || OmitColumns.Count > 0)
             {
                 return this;
             }
             for (int i = 0; i < cols.Length; i++)
             {
-                _Columns.Add(cols[i]);
+                Columns.Add(cols[i]);
             }
             return this;
         }
@@ -42,13 +41,13 @@ namespace Snow.Orm
         /// <returns></returns>
         public Sql Omit(params string[] cols)
         {
-            if (cols == null || _Columns.Count > 0)
+            if (cols == null || Columns.Count > 0)
             {
                 return this;
             }
             for (int i = 0; i < cols.Length; i++)
             {
-                _OmitColumns.Add(cols[i]);
+                OmitColumns.Add(cols[i]);
             }
             return this;
         }

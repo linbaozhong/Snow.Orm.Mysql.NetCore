@@ -48,6 +48,7 @@ namespace Snow.Orm
             {
                 return false;
             }
+            resetFunc.Invoke(obj);
             buffer.Enqueue(obj);
             return true;
         }

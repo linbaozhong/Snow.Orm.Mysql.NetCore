@@ -38,9 +38,30 @@ namespace Snow.Orm
         /// <summary>
         /// 构造Select语句中的Fields
         /// </summary>
+        /// <param name="cond">查询条件对象</param>
+        /// <returns></returns>
+        static string GetSelectColumnString(Sql cond)
+        {
+            if (cond.OmitColumns.Count > 0)
+            {
+                foreach (var col in _TColumns)
+                {
+                    if (cond.OmitColumns.Contains(col)) continue;
+                    cond.Columns.Add(col);
+                }
+            }
+            if (cond.Columns.Count > 0)
+            {
+                return GetSelectColumnStringByArgs(cond.Columns);
+            }
+            return SelectColumnString;
+        }
+        /// <summary>
+        /// 构造Select语句中的Fields
+        /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        static string GetSelectColumnStringFromArgs(IEnumerable<string> args)
+        static string GetSelectColumnStringByArgs(IEnumerable<string> args)
         {
             var _selectColumns = string.Empty;
             var _key = args.Join();
