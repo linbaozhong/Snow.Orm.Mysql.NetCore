@@ -56,9 +56,9 @@ namespace Snow.Orm
 
         protected virtual void Dispose(bool disposing)
         {
-            this.Disposed = true;
             if (disposing && pool.PutObject(this))
             {
+                this.Disposed = true;
                 GC.SuppressFinalize(this);
             }
         }
