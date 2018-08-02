@@ -36,6 +36,28 @@ namespace Snow.Orm
             }
             return Get(row, args);
         }
+        public T GetCache(long id, CacheTypes from = CacheTypes.From)
+        {
+            if (id < 0) return null;
+            if (from == CacheTypes.None) { return Get(id); }
+
+            T row = null;
+            if (from == CacheTypes.From && RowCache.Get(id, ref row)) return Get(row);
+
+            row_lock.id = id;
+            lock (row_lock)
+            {
+                if (from == CacheTypes.From && RowCache.Get(id, ref row)) return Get(row);
+                row = Get(id);
+                if (row == null)
+                    RowCache.Add(id, null, 5);
+                else
+                    RowCache.Add(id, row);
+                // 让等待中的线程直接读取缓存
+                from = CacheTypes.From;
+            }
+            return row;
+        }
         public T GetCache(Sql cond, CacheTypes from = CacheTypes.From)
         {
             try
@@ -76,6 +98,12 @@ namespace Snow.Orm
             if (id < 0) return null;
             var _sql = string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetSelectColumnStringByArgs(args), FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
             return _Get(_sql, null, args);
+        }
+        public T Get<V>(string col, V val)
+        {
+            var _Params = new List<DbParameter>();
+            var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, " WHERE ", GetCondition(col, val, _Params), " limit 1;");
+            return _Get(_sql, _Params);
         }
         /// <summary>
         /// 读取数据对象
@@ -380,7 +408,7 @@ namespace Snow.Orm
         /// <param name="sqlString">原生sql字符串</param>
         /// <param name="args">查询条件值,和sql字符串中的？号对应</param>
         /// <returns></returns>
-        public T Get(string sqlString, params object[] args)
+        public T GetRaw(string sqlString, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlString))
             {
