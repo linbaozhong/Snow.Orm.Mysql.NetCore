@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
+using adeway;
 
 namespace Snow.Orm
 {
@@ -42,12 +43,12 @@ namespace Snow.Orm
             if (from == CacheTypes.None) { return Get(id); }
 
             T row = null;
-            if (from == CacheTypes.From && RowCache.Get(id, ref row)) return Get(row);
+            if (from == CacheTypes.From && RowCache.Get(id, ref row)) return row;
 
             row_lock.id = id;
             lock (row_lock)
             {
-                if (from == CacheTypes.From && RowCache.Get(id, ref row)) return Get(row);
+                if (from == CacheTypes.From && RowCache.Get(id, ref row)) return row;
                 row = Get(id);
                 if (row == null)
                     RowCache.Add(id, null, 5);
