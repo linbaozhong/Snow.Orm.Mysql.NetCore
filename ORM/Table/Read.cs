@@ -43,12 +43,12 @@ namespace Snow.Orm
             if (from == CacheTypes.None) { return Get(id); }
 
             T row = null;
-            if (from == CacheTypes.From && RowCache.Get(id, ref row)) return row;
+            if (from == CacheTypes.From && RowCache.Get(id, ref row)) return _Clone(row);
 
             row_lock.id = id;
             lock (row_lock)
             {
-                if (from == CacheTypes.From && RowCache.Get(id, ref row)) return row;
+                if (from == CacheTypes.From && RowCache.Get(id, ref row)) return _Clone(row);
                 row = Get(id);
                 if (row == null)
                     RowCache.Add(id, null, 5);
@@ -57,7 +57,7 @@ namespace Snow.Orm
                 // 让等待中的线程直接读取缓存
                 from = CacheTypes.From;
             }
-            return row;
+            return _Clone(row);
         }
         public T GetCache(Sql cond, CacheTypes from = CacheTypes.From)
         {

@@ -157,7 +157,9 @@ namespace Snow.Orm
             {
                 var _setColumn = cond.GetSetColumn();
                 var sql = "UPDATE " + TableString + " SET " + _setColumn + cond.GetWhereString() + ";";
-                //if (Db.IsDebug) Db.ShowSqlString(sql, cond.Params);
+#if DEBUG
+                Log.Debug(DB.Debug(sql, cond.Params));
+#endif
 
                 if (_setColumn == "")
                 {

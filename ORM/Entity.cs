@@ -97,7 +97,9 @@ namespace Snow.Orm
             {
                 if (_val == null) return default(T);
                 try { return (T)Convert.ChangeType(_val, typeof(T)); }
-                catch (Exception e) { throw e; }
+                catch (Exception e) {
+                    throw e;
+                }
             }
             return default(T);
         }
