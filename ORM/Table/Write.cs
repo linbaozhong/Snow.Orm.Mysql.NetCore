@@ -22,7 +22,7 @@ namespace Snow.Orm
                 {
                     _Fields.Add(DB.GetName(item.Key));
                     _Values.Add(DB._ParameterPrefix + item.Key);
-                    _Params.Add(DB.GetParam(item.Key, item.Value.ToString()));
+                    _Params.Add(DB.GetParam(item.Key, item.Value));
                 }
             }
             var sql = "INSERT INTO " + TableString + " (" + string.Join(",", _Fields) + ") VALUES(" + string.Join(",", _Values) + "); select ROW_COUNT(),LAST_INSERT_ID();";
@@ -157,10 +157,6 @@ namespace Snow.Orm
             {
                 var _setColumn = cond.GetSetColumn();
                 var sql = "UPDATE " + TableString + " SET " + _setColumn + cond.GetWhereString() + ";";
-#if DEBUG
-                Log.Debug(DB.Debug(sql, cond.Params));
-#endif
-
                 if (_setColumn == "")
                 {
                     throw new Exception("SQL语法错误");

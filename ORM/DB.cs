@@ -631,9 +631,7 @@ namespace Snow.Orm
             try { dap.Fill(tb); }
             catch (Exception e)
             {
-#if DEBUG
                 Log.Debug(Debug(sql, parames),e);
-#endif
                 tb.Dispose();
                 return false;
             }

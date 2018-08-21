@@ -51,7 +51,7 @@ namespace Snow.Orm
         }
         T _Get(T bean, IEnumerable<string> args)
         {
-            var _json = new T() as BaseEntity;
+            var _json = new T();
             foreach (var key in args)
             {
                 _json.Add(key, bean.TryGet(key, DBNull.Value));
