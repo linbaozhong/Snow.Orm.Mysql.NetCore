@@ -24,13 +24,13 @@ namespace Snow.Orm
         /// <param name="bean"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public T Get(T bean, params string[] args)
-        {
-            if (bean == null) return null;
-            if (args.Length == 0) return _Clone(bean);
+        //public T _Get(T bean, params string[] args)
+        //{
+        //    if (bean == null) return null;
+        //    if (args.Length == 0) return _Clone(bean);
 
-            return _Get(bean, args);
-        }
+        //    return _Get(bean, (IEnumerable<string>)args);
+        //}
         /// <summary>
         /// 获取一个LIST的指定列
         /// </summary>
@@ -45,12 +45,22 @@ namespace Snow.Orm
             for (var j = 0; j < list.Count; j++)
             {
                 var bean = list[j] as T;
-                _jsons.Add(_Get(bean, args));
+                _jsons.Add(_Get(bean, (IEnumerable<string>)args));
             }
             return _jsons;
         }
+
+        /// <summary>
+        /// 获取一个实体的指定列
+        /// </summary>
+        /// <param name="bean"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
         T _Get(T bean, IEnumerable<string> args)
         {
+            if (bean == null) return null;
+            if (args.Count() == 0) return _Clone(bean);
+
             var _json = new T();
             foreach (var key in args)
             {

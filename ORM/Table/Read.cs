@@ -10,32 +10,47 @@ namespace Snow.Orm
     public partial class Table<T>
     {
         static RowLock row_lock = new RowLock();
+        static CondRowLock condrow_lock = new CondRowLock();
         static RowsLock rows_lock = new RowsLock();
+        static IdsLock ids_lock = new IdsLock();
 
         #region 单个数据对象
+        /// <summary>
+        /// 读取实时数据对象
+        /// </summary>
+        /// <param name="id">主键</param>
+        /// <param name="args">返回的字段</param>
+        /// <returns></returns>
+        public T Get(long id, params string[] args)
+        {
+            if (id < 0) return null;
+            var _sql = string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetSelectColumnStringByArgs(args), FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
+            return _Get(_sql, null, args);
+        }
         /// <summary>
         /// 读取缓存中的数据对象的指定字段
         /// </summary>
         /// <param name="id">主键</param>
         /// <param name="args">返回的字段</param>
         /// <returns></returns>
+        [Obsolete]
         public T GetCache(long id, params string[] args)
         {
             if (id < 0) return null;
             T row = null;
-            if (RowCache.Get(id, ref row)) return Get(row, args);
+            if (RowCache.Get(id, ref row)) return _Get(row, args);
 
-            row_lock.id = id;
+            row_lock.key = id;
             lock (row_lock)
             {
-                if (RowCache.Get(id, ref row)) return Get(row, args);
+                if (RowCache.Get(id, ref row)) return _Get(row, args);
                 row = Get(id);
                 if (row == null)
                     RowCache.Add(id, null, 5);
                 else
                     RowCache.Add(id, row);
             }
-            return Get(row, args);
+            return _Get(row, args);
         }
         public T GetCache(long id, CacheTypes from = CacheTypes.From, params string[] args)
         {
@@ -43,12 +58,12 @@ namespace Snow.Orm
             if (from == CacheTypes.None) { return Get(id, args); }
 
             T row = null;
-            if (from == CacheTypes.From && RowCache.Get(id, ref row)) return Get(row, args);
+            if (from == CacheTypes.From && RowCache.Get(id, ref row)) return _Get(row, args);
 
-            row_lock.id = id;
+            row_lock.key = id;
             lock (row_lock)
             {
-                if (from == CacheTypes.From && RowCache.Get(id, ref row)) return Get(row, args);
+                if (from == CacheTypes.From && RowCache.Get(id, ref row)) return _Get(row, args);
                 row = Get(id);
                 if (row == null)
                     RowCache.Add(id, null, 5);
@@ -57,7 +72,19 @@ namespace Snow.Orm
                 // 让等待中的线程直接读取缓存
                 from = CacheTypes.From;
             }
-            return Get(row, args);
+            return _Get(row, args);
+        }
+
+        public T Get(Sql cond)
+        {
+            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
+            try
+            {
+                var _sql = string.Concat("SELECT ", GetSelectColumnString(cond), FromTableString, cond.GetWhereString(), cond.GetGroupbyString(), cond.GetOrderbyString(), " limit 1;");
+                return _Get(_sql, cond.Params, cond.Columns);
+            }
+            catch { throw; }
+            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
         public T GetCache(Sql cond, CacheTypes from = CacheTypes.From)
         {
@@ -67,8 +94,8 @@ namespace Snow.Orm
             string ck = CombineCacheKey(cond);
             if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return _Clone(row);
 
-            rows_lock.key = ck;
-            lock (rows_lock)
+            condrow_lock.key = ck;
+            lock (condrow_lock)
             {
                 if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return _Clone(row);
 
@@ -84,21 +111,17 @@ namespace Snow.Orm
             return _Clone(row);
         }
         /// <summary>
-        /// 读取实时数据对象
+        /// 读取数据对象
         /// </summary>
-        /// <param name="id">主键</param>
-        /// <param name="args">返回的字段</param>
+        /// <param name="bean"></param>
         /// <returns></returns>
-        public T Get(long id, params string[] args)
+        public T Get(T bean, params string[] args)
         {
-            if (id < 0) return null;
-            var _sql = string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetSelectColumnStringByArgs(args), FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
-            return _Get(_sql, null, args);
-        }
-        public T Get<V>(string col, V val)
-        {
+            if (bean == null) { throw new Exception("bean 不能为 NULL"); }
+
             var _Params = new List<DbParameter>();
-            var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, " WHERE ", GetCondition(col, val, _Params), " limit 1;");
+            var _sql = string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetSelectColumnStringByArgs(args), FromTableString, GetWhereCondition(bean, _Params), " limit 1;");
+
             return _Get(_sql, _Params);
         }
         /// <summary>
@@ -114,8 +137,8 @@ namespace Snow.Orm
             string ck = CombineCacheKey(bean);
             if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return _Clone(row);
 
-            rows_lock.key = ck;
-            lock (rows_lock)
+            condrow_lock.key = ck;
+            lock (condrow_lock)
             {
                 if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return _Clone(row);
 
@@ -133,28 +156,39 @@ namespace Snow.Orm
         /// <summary>
         /// 读取数据对象
         /// </summary>
-        /// <param name="bean"></param>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="col">字段名</param>
+        /// <param name="val">字段值</param>
         /// <returns></returns>
-        public T Get(T bean)
+        public T Get<V>(string col, V val)
         {
-            if (bean == null) { throw new Exception("bean 不能为 NULL"); }
-
             var _Params = new List<DbParameter>();
-            var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, GetWhereCondition(bean, _Params), " limit 1;");
-
+            var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, " WHERE ", GetCondition(col, val, _Params), " limit 1;");
             return _Get(_sql, _Params);
         }
-
-        public T Get(Sql cond)
+        public T GetCache<V>(string col, V val, CacheTypes from = CacheTypes.From)
         {
-            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
-            try
+            if (from == CacheTypes.None) { return Get(col, val); }
+
+            T row = null;
+            string ck = CombineCacheKey(col, val);
+            if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return _Clone(row);
+
+            condrow_lock.key = ck;
+            lock (condrow_lock)
             {
-                var _sql = string.Concat("SELECT ", GetSelectColumnString(cond), FromTableString, cond.GetWhereString(), cond.GetGroupbyString(), cond.GetOrderbyString(), " limit 1;");
-                return _Get(_sql, cond.Params, cond.Columns);
+                if (from == CacheTypes.From && CondRowCache.Get(ck, ref row)) return _Clone(row);
+
+                row = Get(col, val);
+
+                if (row == null)
+                    CondRowCache.Add(ck, null, 5);
+                else
+                    CondRowCache.Add(ck, row);
+                // 让等待中的线程直接读取缓存
+                from = CacheTypes.From;
             }
-            catch { throw; }
-            finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
+            return _Clone(row);
         }
 
         #endregion
@@ -167,17 +201,32 @@ namespace Snow.Orm
         /// <param name="orderby">排序</param>
         /// <param name="count">数量</param>
         /// <returns></returns>
-        public List<T> Gets(T bean, string orderby = null, uint count = 1000)
+        public List<T> Gets(T bean, string orderby = null, uint count = 1000, params string[] args)
         {
             if (bean == null) { throw new Exception("bean 不能为 NULL"); }
 
             var _Params = new List<DbParameter>();
-            var _sql = new StringBuilder(string.Concat("SELECT ", SelectColumnString, FromTableString, GetWhereCondition(bean, _Params)));
+            var _sql = new StringBuilder(string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetSelectColumnStringByArgs(args), FromTableString, GetWhereCondition(bean, _Params)));
             if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
             if (count > 0) _sql.Append(" LIMIT " + count);
 
             return _Gets(_sql.ToString(), _Params);
         }
+        public List<T> GetCaches(T bean, string orderby = null, uint count = 1000, CacheTypes from = CacheTypes.From, params string[] args)
+        {
+            var ids = GetCacheIds(bean, orderby, count, from);
+            if (ids == null) return null;
+            var _list = new List<T>();
+            T _obj = null;
+            foreach (var id in ids)
+            {
+                _obj = GetCache(id, from, args);
+                if (_obj == null) continue;
+                _list.Add(_obj);
+            }
+            return _list;
+        }
+
         public List<T> Gets(Sql cond)
         {
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
@@ -193,12 +242,53 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
-        public List<T> Gets<V>(string col, V val)
+        /// <summary>
+        /// 读取缓存的数据列表(缺省读取前1000个)
+        /// (只用于有唯一主键ID的数据表或视图)
+        /// </summary>
+        /// <param name="cond"></param>
+        /// <returns></returns>
+        public List<T> GetCaches(Sql cond, CacheTypes from = CacheTypes.From)
+        {
+            var args = cond == null ? new string[0] : cond.Columns.ToArray();
+            var ids = GetCacheIds(cond, from);
+            if (ids == null) return null;
+            var _list = new List<T>();
+            T _obj = null;
+            foreach (var id in ids)
+            {
+                _obj = GetCache(id, from, args);
+                if (_obj == null) continue;
+                _list.Add(_obj);
+            }
+            return _list;
+        }
+        public List<T> Gets<V>(string col, V val, params string[] args)
         {
             var _Params = new List<DbParameter>();
-            var _sql = new StringBuilder(string.Concat("SELECT ", SelectColumnString, FromTableString, " WHERE ", GetCondition(col, val, _Params)));
+            var _sql = new StringBuilder(string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetSelectColumnStringByArgs(args), FromTableString, " WHERE ", GetCondition(col, val, _Params)));
 
             return _Gets(_sql.ToString(), _Params);
+        }
+        /// <summary>
+        /// 读取缓存的数据列表(缺省读取前1000个)
+        /// (只用于有唯一主键ID的数据表或视图)
+        /// </summary>
+        /// <param name="cond"></param>
+        /// <returns></returns>
+        public List<T> GetCaches<V>(string col, V val, string orderby = null, uint count = 1000, CacheTypes from = CacheTypes.From, params string[] args)
+        {
+            var ids = GetCacheIds(col, val, orderby, count, from);
+            if (ids == null) return null;
+            var _list = new List<T>();
+            T _obj = null;
+            foreach (var id in ids)
+            {
+                _obj = GetCache(id, from, args);
+                if (_obj == null) continue;
+                _list.Add(_obj);
+            }
+            return _list;
         }
 
         /// <summary>
@@ -221,6 +311,39 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
+        /// <summary>
+        /// 读取缓存的ids(缺省读取前1000个)
+        /// </summary>
+        /// <param name="cond"></param>
+        /// <param name="from"></param>
+        /// <returns></returns>
+        public long[] GetCacheIds(Sql cond = null, CacheTypes from = CacheTypes.From)
+        {
+            try
+            {
+                if (from == CacheTypes.None) { return GetIds(cond); }
+
+                long[] ids = null;
+                string ck = CombineCacheKey(cond);
+                if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
+
+                ids_lock.key = ck;
+                lock (ids_lock)
+                {
+                    if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
+                    ids = GetIds(cond);
+                    if (ids == null)
+                        ListCache.Add(ck, null, 5);
+                    else
+                        ListCache.Add(ck, ids);
+                    // 让等待中的线程直接读取缓存
+                    from = CacheTypes.From;
+                }
+                return ids;
+            }
+            catch { throw; }
+            finally { }
+        }
 
         /// <summary>
         /// 读取ids(缺省读取前1000个)
@@ -238,154 +361,25 @@ namespace Snow.Orm
 
             return _GetIds(_sql, _Params);
         }
-
-        public long[] GetIds()
-        {
-            try
-            {
-                var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, " LIMIT 1000"));
-
-                return _GetIds(_sql, null);
-            }
-            catch { throw; }
-            finally { }
-        }
-        /// <summary>
-        /// 读取前size个ID
-        /// </summary>
-        /// <param name="bean"></param>
-        /// <param name="orderby">排序</param>
-        /// <param name="count"></param>
-        /// <returns>数量</returns>
-        public long[] GetIds(T bean, string orderby = null, uint count = 1000, CacheTypes from = CacheTypes.From)
-        {
-            if (bean == null) { throw new Exception("bean 不能为 NULL"); }
-            if (from == CacheTypes.None)
-            {
-                var _Params = new List<DbParameter>();
-                var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, GetWhereCondition(bean, _Params)));
-                if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
-                if (count > 0) _sql.Append(" LIMIT " + count);
-
-                return _GetIds(_sql, _Params);
-            }
-
-            long[] ids = null;
-            string ck = CombineCacheKey(bean, orderby, count);
-            if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
-
-            rows_lock.key = ck;
-            lock (rows_lock)
-            {
-                if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
-
-                var _Params = new List<DbParameter>();
-                var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, GetWhereCondition(bean, _Params)));
-                if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
-                if (count > 0) _sql.Append(" LIMIT " + count);
-
-                ids = _GetIds(_sql, _Params);
-                if (ids == null) ListCache.Add(ck, null, 5);
-                else ListCache.Add(ck, ids);
-                // 让等待中的线程直接读取缓存
-                from = CacheTypes.From;
-            }
-            return ids;
-        }
-        /// <summary>
-        /// 读取缓存的数据列表(缺省读取前1000个)
-        /// (只用于有唯一主键ID的数据表或视图)
-        /// </summary>
-        /// <param name="cond"></param>
-        /// <returns></returns>
-        public List<T> GetCaches(Sql cond, CacheTypes from = CacheTypes.From)
-        {
-            var args = cond == null ? new string[0] : cond.Columns.ToArray();
-            var ids = GetCacheIds(cond, from);
-            if (ids == null) return null;
-            var _list = new List<T>();
-            T _obj = null;
-            foreach (var id in ids)
-            {
-                _obj = GetCache(id, args);
-                if (_obj == null) continue;
-                _list.Add(_obj);
-            }
-            return _list;
-        }
-        /// <summary>
-        /// 读取缓存的数据列表(缺省读取前1000个)
-        /// (只用于有唯一主键ID的数据表或视图)
-        /// </summary>
-        /// <param name="cond"></param>
-        /// <returns></returns>
-        public List<T> GetCaches<V>(string col, V val, CacheTypes from = CacheTypes.From, params string[] args)
-        {
-            var ids = GetCacheIds(col, val, from);
-            if (ids == null) return null;
-            var _list = new List<T>();
-            T _obj = null;
-            foreach (var id in ids)
-            {
-                _obj = GetCache(id, from, args);
-                if (_obj == null) continue;
-                _list.Add(_obj);
-            }
-            return _list;
-        }
-
         /// <summary>
         /// 读取缓存的ids(缺省读取前1000个)
         /// </summary>
         /// <param name="cond"></param>
         /// <param name="from"></param>
         /// <returns></returns>
-        public long[] GetCacheIds(Sql cond = null, CacheTypes from = CacheTypes.From)
+        public long[] GetCacheIds<V>(string col, V val, string orderby = null, uint count = 1000, CacheTypes from = CacheTypes.From)
         {
-            try
-            {
-                if (from == CacheTypes.None) { return GetIds(cond); }
-
-                long[] ids = null;
-                string ck = CombineCacheKey(cond);
-                if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
-
-                rows_lock.key = ck;
-                lock (rows_lock)
-                {
-                    if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
-                    ids = GetIds(cond);
-                    if (ids == null)
-                        ListCache.Add(ck, null, 5);
-                    else
-                        ListCache.Add(ck, ids);
-                    // 让等待中的线程直接读取缓存
-                    from = CacheTypes.From;
-                }
-                return ids;
-            }
-            catch { throw; }
-            finally { }
-        }
-        /// <summary>
-        /// 读取缓存的ids(缺省读取前1000个)
-        /// </summary>
-        /// <param name="cond"></param>
-        /// <param name="from"></param>
-        /// <returns></returns>
-        public long[] GetCacheIds<V>(string col, V val, CacheTypes from = CacheTypes.From)
-        {
-            if (from == CacheTypes.None) { return GetIds(col, val); }
+            if (from == CacheTypes.None) { return GetIds(col, val, orderby, count); }
 
             long[] ids = null;
-            string ck = CombineCacheKey(col, val);
+            string ck = CombineCacheKey(col, val, orderby, count);
             if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
 
-            rows_lock.key = ck;
-            lock (rows_lock)
+            ids_lock.key = ck;
+            lock (ids_lock)
             {
                 if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
-                ids = GetIds(col, val);
+                ids = GetIds(col, val, orderby, count);
                 if (ids == null)
                     ListCache.Add(ck, null, 5);
                 else
@@ -395,6 +389,77 @@ namespace Snow.Orm
             }
             return ids;
         }
+
+
+        public long[] GetIds(string orderby = null, uint count = 1000)
+        {
+            var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString));
+            if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
+            if (count > 0) _sql.Append(" LIMIT " + count);
+            return _GetIds(_sql, null);
+        }
+        public long[] GetCacheIds(string orderby = null, uint count = 1000, CacheTypes from = CacheTypes.From)
+        {
+            if (from == CacheTypes.None) { return GetIds(orderby, count); }
+
+            long[] ids = null;
+            string ck = CombineCacheKey(orderby, count);
+            if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
+
+            ids_lock.key = ck;
+            lock (ids_lock)
+            {
+                if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
+                ids = GetIds(orderby, count);
+                if (ids == null)
+                    ListCache.Add(ck, null, 5);
+                else
+                    ListCache.Add(ck, ids);
+                // 让等待中的线程直接读取缓存
+                from = CacheTypes.From;
+            }
+            return ids;
+        }
+
+        /// <summary>
+        /// 读取前size个ID
+        /// </summary>
+        /// <param name="bean"></param>
+        /// <param name="orderby">排序</param>
+        /// <param name="count"></param>
+        /// <returns>数量</returns>
+        public long[] GetIds(T bean, string orderby = null, uint count = 1000)
+        {
+            if (bean == null) { throw new Exception("bean 不能为 NULL"); }
+            var _Params = new List<DbParameter>();
+            var _sql = new StringBuilder(string.Concat("SELECT ", DB.GetName("id"), FromTableString, GetWhereCondition(bean, _Params)));
+            if (!string.IsNullOrWhiteSpace(orderby)) _sql.Append(" ORDER BY " + orderby);
+            if (count > 0) _sql.Append(" LIMIT " + count);
+
+            return _GetIds(_sql, _Params);
+        }
+        public long[] GetCacheIds(T bean, string orderby = null, uint count = 1000, CacheTypes from = CacheTypes.From)
+        {
+            if (bean == null) { throw new Exception("bean 不能为 NULL"); }
+            if (from == CacheTypes.None) { return GetIds(bean, orderby, count); }
+
+            long[] ids = null;
+            string ck = CombineCacheKey(bean, orderby, count);
+            if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
+
+            rows_lock.key = ck;
+            lock (rows_lock)
+            {
+                if (from == CacheTypes.From && ListCache.Get(ck, ref ids)) return ids;
+                ids = GetIds(bean, orderby, count);
+                if (ids == null) ListCache.Add(ck, null, 5);
+                else ListCache.Add(ck, ids);
+                // 让等待中的线程直接读取缓存
+                from = CacheTypes.From;
+            }
+            return ids;
+        }
+
 
         #endregion
 
@@ -462,11 +527,10 @@ namespace Snow.Orm
         /// <returns></returns>
         public bool Exists(long id)
         {
-            if (GetCache(id) == null)
+            if (GetCache(id, CacheTypes.From) == null)
             {
                 var _sql = string.Concat("SELECT ", DB.GetName("id"), FromTableString, " WHERE ", DB.GetName("id"), "=", id, " limit 1;");
                 return Db.ReadSingle(_sql) != null;
-                //return _Exists(_sql);
             }
             return true;
         }
@@ -573,9 +637,17 @@ namespace Snow.Orm
 
     public class RowLock
     {
-        public long id { set; get; }
+        public long key { set; get; }
+    }
+    public class CondRowLock
+    {
+        public string key { set; get; }
     }
     public class RowsLock
+    {
+        public string key { set; get; }
+    }
+    public class IdsLock
     {
         public string key { set; get; }
     }
