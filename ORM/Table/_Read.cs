@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
+using adeway;
 
 namespace Snow.Orm
 {
@@ -14,7 +15,7 @@ namespace Snow.Orm
             {
                 if (dr.Read())
                 {
-                    var _obj = new T() as BaseEntity;
+                    var _obj = new T();
                     var i = 0;
                     if (cols == null || cols.Count() == 0) cols = _TColumns;
                     foreach (var item in cols)
@@ -38,7 +39,7 @@ namespace Snow.Orm
                     if (cols == null || cols.Count() == 0) cols = _TColumns;
                     while (dr.Read())
                     {
-                        var _obj = new T() as BaseEntity;
+                        var _obj = new T();
                         var i = 0;
                         foreach (var item in cols)
                         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Text;
 using System.Threading.Tasks;
+using adeway;
 
 namespace Snow.Orm
 {
@@ -21,7 +22,7 @@ namespace Snow.Orm
                 {
                     _Fields.Add(DB.GetName(item.Key));
                     _Values.Add(DB._ParameterPrefix + item.Key);
-                    _Params.Add(DB.GetParam(item.Key, item.Value.ToString()));
+                    _Params.Add(DB.GetParam(item.Key, item.Value));
                 }
             }
             var sql = "INSERT INTO " + TableString + " (" + string.Join(",", _Fields) + ") VALUES(" + string.Join(",", _Values) + "); select ROW_COUNT(),LAST_INSERT_ID();";
@@ -156,8 +157,6 @@ namespace Snow.Orm
             {
                 var _setColumn = cond.GetSetColumn();
                 var sql = "UPDATE " + TableString + " SET " + _setColumn + cond.GetWhereString() + ";";
-                //if (Db.IsDebug) Db.ShowSqlString(sql, cond.Params);
-
                 if (_setColumn == "")
                 {
                     throw new Exception("SQL语法错误");
@@ -174,7 +173,7 @@ namespace Snow.Orm
             finally { if (!cond.Disposed) cond.Dispose(); }
         }
         /// <summary>
-        /// 递增
+        /// 指定列递增
         /// </summary>
         /// <param name="id"></param>
         /// <param name="col"></param>
@@ -186,7 +185,7 @@ namespace Snow.Orm
             return IncrDecr(id, col, val);
         }
         /// <summary>
-        /// 递减
+        /// 指定列递减
         /// </summary>
         /// <param name="id"></param>
         /// <param name="col"></param>
@@ -300,6 +299,10 @@ namespace Snow.Orm
         public void RemoveListCache(T bean, string orderby = null, uint count = 1000)
         {
             ListCache.Remove(CombineCacheKey(bean, orderby, count));
+        }
+        public void RemoveListCache<V>(string col, V val)
+        {
+            ListCache.Remove(CombineCacheKey(col,val));
         }
         public void RemoveListCache(Sql cond)
         {
