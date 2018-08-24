@@ -298,7 +298,6 @@ namespace Snow.Orm
         public DbDataReader Read(string sql, List<DbParameter> parames)
         {
             if (sql == null || sql.Length < 3) return null;
-
             MySqlCommand cmd = this.Command();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = sql;
