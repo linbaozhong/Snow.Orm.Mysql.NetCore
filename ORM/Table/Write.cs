@@ -173,7 +173,7 @@ namespace Snow.Orm
             finally { if (!cond.Disposed) cond.Dispose(); }
         }
         /// <summary>
-        /// 递增
+        /// 指定列递增
         /// </summary>
         /// <param name="id"></param>
         /// <param name="col"></param>
@@ -185,7 +185,7 @@ namespace Snow.Orm
             return IncrDecr(id, col, val);
         }
         /// <summary>
-        /// 递减
+        /// 指定列递减
         /// </summary>
         /// <param name="id"></param>
         /// <param name="col"></param>
@@ -299,6 +299,10 @@ namespace Snow.Orm
         public void RemoveListCache(T bean, string orderby = null, uint count = 1000)
         {
             ListCache.Remove(CombineCacheKey(bean, orderby, count));
+        }
+        public void RemoveListCache<V>(string col, V val)
+        {
+            ListCache.Remove(CombineCacheKey(col,val));
         }
         public void RemoveListCache(Sql cond)
         {

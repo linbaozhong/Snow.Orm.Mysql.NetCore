@@ -101,7 +101,7 @@ namespace Snow.Orm
             return DB.GetCondition(col, Op.Eq);
         }
 
-        static string CombineCacheKey(string col, string val, string orderby, uint count)
+        static string CombineCacheKey<V>(string col, V val, string orderby = null, uint count = 0)
         {
             StringBuilder ck = new StringBuilder(100);
             ck.Append(count);
@@ -115,7 +115,7 @@ namespace Snow.Orm
             ck.Append("\n");
             return ck.ToString();
         }
-        static string CombineCacheKey(T bean, string orderby, uint count)
+        static string CombineCacheKey(T bean, string orderby = null, uint count = 0)
         {
             StringBuilder ck = new StringBuilder(100);
             ck.Append(count);
