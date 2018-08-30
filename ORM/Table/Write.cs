@@ -202,7 +202,6 @@ namespace Snow.Orm
             if (_ColumnDictionary.ContainsKey(col))
             {
                 sql = "UPDATE " + TableString + " SET " + DB.GetName(col) + Op.Eq + DB.GetName(col) + $"{op}{val} WHERE {DB.GetName("ID")}={id};";
-                //if (Db.IsDebug) Db.ShowSqlString(sql, _Param);
             }
             else { throw new Exception(col + "列不存在"); }
 

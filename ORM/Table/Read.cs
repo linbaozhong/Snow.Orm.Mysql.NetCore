@@ -618,6 +618,11 @@ namespace Snow.Orm
             catch { throw; }
             finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
         }
+        /// <summary>
+        /// 原生查询
+        /// </summary>
+        /// <param name="sqlString"></param>
+        /// <returns></returns>
         public DataTable Query(string sqlString)
         {
             return Db.Query(sqlString);
