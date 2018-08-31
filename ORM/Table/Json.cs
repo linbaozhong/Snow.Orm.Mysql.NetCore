@@ -18,19 +18,7 @@ namespace Snow.Orm
             }
             return _bean;
         }
-        /// <summary>
-        /// 获取一个实体的指定列
-        /// </summary>
-        /// <param name="bean"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        //public T _Get(T bean, params string[] args)
-        //{
-        //    if (bean == null) return null;
-        //    if (args.Length == 0) return _Clone(bean);
 
-        //    return _Get(bean, (IEnumerable<string>)args);
-        //}
         /// <summary>
         /// 获取一个LIST的指定列
         /// </summary>

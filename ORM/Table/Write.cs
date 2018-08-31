@@ -28,7 +28,7 @@ namespace Snow.Orm
             var sql = "INSERT INTO " + TableString + " (" + string.Join(",", _Fields) + ") VALUES(" + string.Join(",", _Values) + "); select ROW_COUNT(),LAST_INSERT_ID();";
             if (Db.Insert(sql, _Params, ref id))
             {
-                ListCache.Clear();
+                OnChange();
                 return true;
             }
             return false;
@@ -67,7 +67,7 @@ namespace Snow.Orm
 
             if (Db.Write(sql, _Params))
             {
-                RowCache.Remove(id);
+                OnChange(id);
                 return true;
             }
             return false;
@@ -95,7 +95,7 @@ namespace Snow.Orm
 
             if (Db.Write(sql, _Params))
             {
-                RowCache.Remove(id);
+                OnChange(id);
                 return true;
             }
             return false;
@@ -117,12 +117,17 @@ namespace Snow.Orm
             var cmd = DB.GetRawSql(setString, args);
             sql.Append(cmd.SqlString);
             sql.Append($" WHERE {DB.GetName("ID")}={id};");
-            try { return Db.Write(sql.ToString(), cmd.SqlParams); }
-            catch (Exception) { throw; }
-            finally
+            try
             {
-                //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
+                if (Db.Write(sql.ToString(), cmd.SqlParams))
+                {
+                    OnChange(id);
+                    return true;
+                }
+                return false;
             }
+            catch (Exception) { throw; }
+            finally { }
         }
         public bool Update<V>(long id, string col, V val)
         {
@@ -142,7 +147,7 @@ namespace Snow.Orm
             {
                 if (Db.Write(sql, _Param))
                 {
-                    RowCache.Remove(id);
+                    OnChange(id);
                     return true;
                 }
                 return false;
@@ -163,8 +168,7 @@ namespace Snow.Orm
                 }
                 if (Db.Write(sql, cond.Params))
                 {
-                    var _ids = GetCacheIds(cond);
-                    Task.Run(() => { RowCache.Remove(_ids);});
+                    OnChange(GetCacheIds(cond));
                     return true;
                 }
                 return false;
@@ -209,7 +213,7 @@ namespace Snow.Orm
             {
                 if (Db.Write(sql))
                 {
-                    RowCache.Remove(id);
+                    OnChange(id);
                     return true;
                 }
                 return false;
@@ -226,11 +230,7 @@ namespace Snow.Orm
             {
                 if (Db.Write(sql))
                 {
-                    Task.Run(() =>
-                    {
-                        RowCache.Remove(id);
-                        ListCache.Clear();
-                    });
+                    OnChange(id);
                     return true;
                 }
                 return false;
@@ -248,11 +248,7 @@ namespace Snow.Orm
             {
                 if (Db.Write(sql))
                 {
-                    Task.Run(() =>
-                    {
-                        RowCache.Remove(ids as long[]);
-                        ListCache.Clear();
-                    });
+                    OnChange(ids as long[]);
                     return true;
                 }
                 return false;
@@ -265,48 +261,18 @@ namespace Snow.Orm
         public bool Delete(Sql cond)
         {
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
-
             try
             {
                 var sql = "DELETE FROM " + TableString + cond.GetWhereString() + ";";
                 if (Db.Write(sql))
                 {
-                    var _ids = GetCacheIds(cond);
-                    Task.Run(() =>
-                    {
-                        RowCache.Remove(_ids);
-                        ListCache.Clear();
-                    });
+                    OnChange(GetCacheIds(cond));
                     return true;
                 }
                 return false;
             }
             catch { throw; }
             finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
-        }
-        #endregion
-
-        #region Cache
-        public void RemoveCache(long id)
-        {
-            RowCache.Remove(id);
-        }
-        public void RemoveCache(long[] ids)
-        {
-            RowCache.Remove(ids);
-        }
-        public void RemoveListCache(T bean, string orderby = null, uint count = 1000)
-        {
-            ListCache.Remove(CombineCacheKey(bean, orderby, count));
-        }
-        public void RemoveListCache<V>(string col, V val)
-        {
-            ListCache.Remove(CombineCacheKey(col,val));
-        }
-        public void RemoveListCache(Sql cond)
-        {
-            ListCache.Remove(CombineCacheKey(cond));
-            if (!cond.Disposed) cond.Dispose();
         }
         #endregion
     }
