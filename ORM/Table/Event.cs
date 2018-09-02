@@ -7,14 +7,21 @@ namespace Snow.Orm
 {
     public partial class Table<T>
     {
-        public void OnChange()
+        /// <summary>
+        /// insert 以后
+        /// </summary>
+        public void OnInsert()
         {
             Task.Run(() =>
             {
                 ListCache.Clear();
             });
         }
-        public void OnChange(long id)
+        /// <summary>
+        /// update 以后
+        /// </summary>
+        /// <param name="id"></param>
+        public void OnUpdate(long id)
         {
             Task.Run(() =>
             {
@@ -22,7 +29,7 @@ namespace Snow.Orm
                 ListCache.Clear();
             });
         }
-        public void OnChange(long[] ids)
+        public void OnUpdate(long[] ids)
         {
             if (ids == null || ids.Length == 0) return;
             Task.Run(() =>
@@ -35,10 +42,7 @@ namespace Snow.Orm
         #region Cache
         public void RemoveCache(long id)
         {
-            Task.Run(() =>
-            {
-                RowCache.Remove(id);
-            });
+            RowCache.Remove(id);
         }
         public void RemoveCache(long[] ids)
         {
