@@ -28,7 +28,7 @@ namespace Snow.Orm
             var sql = "INSERT INTO " + TableString + " (" + string.Join(",", _Fields) + ") VALUES(" + string.Join(",", _Values) + "); select ROW_COUNT(),LAST_INSERT_ID();";
             if (Db.Insert(sql, _Params, ref id))
             {
-                ListCache.Clear();
+                OnInsert();
                 return true;
             }
             return false;
@@ -43,31 +43,35 @@ namespace Snow.Orm
         #region Update
         public bool Update(T bean)
         {
-            if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
+            if (bean == null || bean.Count == 0) { throw new Ex("bean 不能为 NULL", Ex.Null); }
             var _SetColumns = new List<string>();
             var _Params = new List<DbParameter>();
-            var id = 0;
+            var id = 0L;
+            if (bean.ContainsKey("id")) { id = bean["id"].ToLong(); }
+            if (id == 0) { throw new Ex("id = 0 错误", Ex.BadParameter); }
+            //var _old = GetCache(id);
+            //if (_old == null) { throw new Ex("目标数据不存在", Ex.NotFound); }
+
             foreach (var item in bean)
             {
-                if (item.Key.Equals("ID", StringComparison.OrdinalIgnoreCase))
+                if (item.Key.Equals("ID", StringComparison.OrdinalIgnoreCase)) continue;
+                if (_TColumns.Contains(item.Key))
                 {
-                    id = item.Value.ToInt();
-                }
-                else if (_TColumns.Contains(item.Key))
-                {
+                    //// 数据没有变化
+                    //if (_old[item.Key] == item.Value) continue;
+
                     _SetColumns.Add(DB.GetCondition(item.Key));
                     _Params.Add(DB.GetParam(item.Key, item.Value));
                 }
             }
-            if (id == 0) { throw new Exception("id = 0 错误"); }
-            var sql = "UPDATE " + TableString + " SET " + string.Join(",", _SetColumns) + $" WHERE {DB.GetName("ID")}={id};";
-            //if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
 
-            if (_SetColumns.Count == 0) { throw new Exception("SQL语法错误"); }
+            var sql = "UPDATE " + TableString + " SET " + string.Join(",", _SetColumns) + $" WHERE {DB.GetName("ID")}={id};";
+
+            if (_SetColumns.Count == 0) { throw new Ex("SQL语法错误", Ex.Syntax); }
 
             if (Db.Write(sql, _Params))
             {
-                RowCache.Remove(id);
+                OnUpdate(id);
                 return true;
             }
             return false;
@@ -75,15 +79,21 @@ namespace Snow.Orm
 
         public bool Update(long id, T bean)
         {
-            if (id == 0) { throw new Exception("id = 0 错误"); }
-            if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
+            if (id == 0) { throw new Ex("id = 0 错误", Ex.BadParameter); }
+            if (bean == null || bean.Count == 0) { throw new Ex("bean 不能为 NULL", Ex.Null); }
+            //var _old = GetCache(id);
+            //if (_old == null) { throw new Ex("目标数据不存在", Ex.NotFound); }
+
             var _SetColumns = new List<string>();
             var _Params = new List<DbParameter>();
             foreach (var item in bean)
             {
-                if (item.Key == "ID") continue;
+                if (item.Key.Equals("ID", StringComparison.OrdinalIgnoreCase)) continue;
                 if (_TColumns.Contains(item.Key))
                 {
+                    //// 数据没有变化
+                    //if (_old[item.Key] == item.Value) continue;
+
                     _SetColumns.Add(DB.GetCondition(item.Key));
                     _Params.Add(DB.GetParam(item.Key, item.Value));
                 }
@@ -91,11 +101,11 @@ namespace Snow.Orm
             var sql = "UPDATE " + TableString + " SET " + string.Join(",", _SetColumns) + $" WHERE {DB.GetName("ID")}={id};";
             //if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
 
-            if (_SetColumns.Count == 0) { throw new Exception("SQL语法错误"); }
+            if (_SetColumns.Count == 0) { throw new Ex("SQL语法错误", Ex.Syntax); }
 
             if (Db.Write(sql, _Params))
             {
-                RowCache.Remove(id);
+                OnUpdate(id);
                 return true;
             }
             return false;
@@ -109,7 +119,7 @@ namespace Snow.Orm
         /// <returns></returns>
         public bool Update(long id, string setString, params object[] args)
         {
-            if (string.IsNullOrWhiteSpace(setString)) { throw new Exception("数据库操作命令不能为空"); }
+            if (string.IsNullOrWhiteSpace(setString)) { throw new Ex("数据库操作命令不能为空", Ex.BadParameter); }
             var sql = new StringBuilder(200);
             sql.Append("UPDATE " + TableString);
             if (!setString.Trim().StartsWith("SET ", StringComparison.CurrentCultureIgnoreCase)) sql.Append(" SET ");
@@ -117,16 +127,17 @@ namespace Snow.Orm
             var cmd = DB.GetRawSql(setString, args);
             sql.Append(cmd.SqlString);
             sql.Append($" WHERE {DB.GetName("ID")}={id};");
-            try { return Db.Write(sql.ToString(), cmd.SqlParams); }
-            catch (Exception) { throw; }
-            finally
+
+            if (Db.Write(sql.ToString(), cmd.SqlParams))
             {
-                //if (Db.IsDebug) Db.ShowSqlString(sql.ToString(), Params);
+                OnUpdate(id);
+                return true;
             }
+            return false;
         }
         public bool Update<V>(long id, string col, V val)
         {
-            if (val == null || string.IsNullOrWhiteSpace(col)) { throw new Exception("必要的参数不能为 NULL"); }
+            if (val == null || string.IsNullOrWhiteSpace(col)) { throw new Ex("参数不能为 NULL", Ex.BadParameter); }
 
             DbParameter _Param = null;
             string sql = null;
@@ -134,24 +145,19 @@ namespace Snow.Orm
             {
                 _Param = DB.GetParam(col, val);
                 sql = "UPDATE " + TableString + " SET " + DB.GetCondition(col) + $" WHERE {DB.GetName("ID")}={id};";
-                //if (Db.IsDebug) Db.ShowSqlString(sql, _Param);
             }
-            else { throw new Exception(col + "列不存在"); }
+            else { throw new Ex(col + "列不存在", Ex.NotFound); }
 
-            try
+            if (Db.Write(sql, _Param))
             {
-                if (Db.Write(sql, _Param))
-                {
-                    RowCache.Remove(id);
-                    return true;
-                }
-                return false;
+                OnUpdate(id);
+                return true;
             }
-            catch { throw; }
+            return false;
         }
         public bool Update(Sql cond)
         {
-            if (cond == null) { throw new Exception("cond 不能为 NULL"); }
+            if (cond == null) { throw new Ex("cond 不能为 NULL", Ex.Null); }
 
             try
             {
@@ -159,12 +165,11 @@ namespace Snow.Orm
                 var sql = "UPDATE " + TableString + " SET " + _setColumn + cond.GetWhereString() + ";";
                 if (_setColumn == "")
                 {
-                    throw new Exception("SQL语法错误");
+                    throw new Ex("SQL语法错误", Ex.Syntax);
                 }
                 if (Db.Write(sql, cond.Params))
                 {
-                    var _ids = GetCacheIds(cond);
-                    Task.Run(() => { RowCache.Remove(_ids);});
+                    OnUpdate(GetCacheIds(cond));
                     return true;
                 }
                 return false;
@@ -203,18 +208,14 @@ namespace Snow.Orm
             {
                 sql = "UPDATE " + TableString + " SET " + DB.GetName(col) + Op.Eq + DB.GetName(col) + $"{op}{val} WHERE {DB.GetName("ID")}={id};";
             }
-            else { throw new Exception(col + "列不存在"); }
+            else { throw new Ex(col + "列不存在", Ex.NotFound); }
 
-            try
+            if (Db.Write(sql))
             {
-                if (Db.Write(sql))
-                {
-                    RowCache.Remove(id);
-                    return true;
-                }
-                return false;
+                OnUpdate(id);
+                return true;
             }
-            catch { throw; }
+            return false;
         }
         #endregion
 
@@ -222,91 +223,38 @@ namespace Snow.Orm
         public bool Delete(long id)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")}={id};";
-            try
+            if (Db.Write(sql))
             {
-                if (Db.Write(sql))
-                {
-                    Task.Run(() =>
-                    {
-                        RowCache.Remove(id);
-                        ListCache.Clear();
-                    });
-                    return true;
-                }
-                return false;
+                OnUpdate(id);
+                return true;
             }
-            catch
-            {
-                throw;
-            }
+            return false;
         }
         public bool Delete(IEnumerable<long> ids)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")} in ({string.Join(",", ids)});";
-            //if (Db.IsDebug) Db.ShowSqlString(sql);
-            try
+            if (Db.Write(sql))
             {
-                if (Db.Write(sql))
-                {
-                    Task.Run(() =>
-                    {
-                        RowCache.Remove(ids as long[]);
-                        ListCache.Clear();
-                    });
-                    return true;
-                }
-                return false;
+                OnUpdate(ids as long[]);
+                return true;
             }
-            catch
-            {
-                throw;
-            }
+            return false;
         }
         public bool Delete(Sql cond)
         {
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
-
             try
             {
                 var sql = "DELETE FROM " + TableString + cond.GetWhereString() + ";";
                 if (Db.Write(sql))
                 {
-                    var _ids = GetCacheIds(cond);
-                    Task.Run(() =>
-                    {
-                        RowCache.Remove(_ids);
-                        ListCache.Clear();
-                    });
+                    OnUpdate(GetCacheIds(cond));
                     return true;
                 }
                 return false;
             }
             catch { throw; }
             finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
-        }
-        #endregion
-
-        #region Cache
-        public void RemoveCache(long id)
-        {
-            RowCache.Remove(id);
-        }
-        public void RemoveCache(long[] ids)
-        {
-            RowCache.Remove(ids);
-        }
-        public void RemoveListCache(T bean, string orderby = null, uint count = 1000)
-        {
-            ListCache.Remove(CombineCacheKey(bean, orderby, count));
-        }
-        public void RemoveListCache<V>(string col, V val)
-        {
-            ListCache.Remove(CombineCacheKey(col,val));
-        }
-        public void RemoveListCache(Sql cond)
-        {
-            ListCache.Remove(CombineCacheKey(cond));
-            if (!cond.Disposed) cond.Dispose();
         }
         #endregion
     }
