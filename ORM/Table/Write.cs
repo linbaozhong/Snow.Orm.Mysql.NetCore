@@ -101,7 +101,7 @@ namespace Snow.Orm
             return false;
         }
         /// <summary>
-        /// UPDATE
+        /// 原生UPDATE
         /// </summary>
         /// <param name="id">主键值</param>
         /// <param name="setString">SET字符串,"a=? and b=?"</param>
