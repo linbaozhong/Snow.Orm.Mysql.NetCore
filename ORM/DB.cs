@@ -459,10 +459,10 @@ namespace Snow.Orm
         /// <param name="sql"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public bool Write(out int rows,string sql, DbParameter param = null)
+        public DalResult Write(string sql, DbParameter param = null)
         {
-            rows = 0;
-            if (sql == null || sql.Length < 3) return false;
+            var result = DalResult.Factory;
+            if (sql == null || sql.Length < 3) return result;
             using (var conn = this.Connection(WriteConnStr))
             using (var cmd = this.Command(sql, conn))
             {
@@ -470,15 +470,16 @@ namespace Snow.Orm
                 try
                 {
                     cmd.Connection.Open();
-                    cmd.ExecuteNonQuery();
-                    return true;
+                    result.Rows = cmd.ExecuteNonQuery();
+                    result.Success = true;
+                    return result;
                 }
                 catch
                 {
 #if DEBUG
                     Log.Debug(Debug(sql, param));
 #endif
-                    throw;
+                    return result;
                 }
             }
         }
@@ -490,10 +491,10 @@ namespace Snow.Orm
         /// <param name="parames"></param>
         /// <param name="rows">返回受影响的行数</param>
         /// <returns></returns>
-        public bool Write(Session sess, string sql, List<DbParameter> parames, out int rows)
+        public DalResult Write(Session sess, string sql, List<DbParameter> parames)
         {
-            rows = 0;
-            if (sql == null || sql.Length < 3) return false;
+            var result = DalResult.Factory;
+            if (sql == null || sql.Length < 3) return result;
 
             FuncEx<MySqlCommand, List<DbParameter>, int, bool> func = (MySqlCommand cmd, List<DbParameter> _parames, out int _num) =>
             {
@@ -516,21 +517,23 @@ namespace Snow.Orm
                     return false;
                 }
             };
+            var rows = 0;
             if (sess == null)
             {
                 using (var conn = this.Connection(WriteConnStr))
                 using (var cmd = this.Command(sql, conn))
                 {
-                    return func(cmd, parames, out rows);
+                    result.Success = func(cmd, parames, out rows);
                 }
             }
             else
             {
                 sess._Command.CommandText = sql;
-                var ok = func(sess._Command, parames, out rows);
-                if (!ok) sess.Rollback();
-                return ok;
+                result.Success = func(sess._Command, parames, out rows);
+                if (!result.Success) sess.Rollback();
             }
+            result.Rows = rows;
+            return result;
         }
         delegate TResult FuncEx<in T1, in T2, T3, out TResult>(T1 t1, T2 t2, out T3 t3);
 
@@ -578,16 +581,15 @@ namespace Snow.Orm
         /// <param name="sql"></param>
         /// <param name="parames"></param>
         /// <returns></returns>
-        internal bool Insert(Session sess, string sql, List<DbParameter> parames, out long id)
+        internal DalResult Insert(Session sess, string sql, List<DbParameter> parames)
         {
-            id = 0;
-            if (sql == null || parames == null || sql.Length < 3 || parames.Count < 1) return false;
+            var result = DalResult.Factory;
+            if (sql == null || parames == null || sql.Length < 3 || parames.Count < 1) return result;
 
-            FuncEx<MySqlCommand, long, bool> func = (MySqlCommand cmd, out long rid) =>
+            Func<MySqlCommand, DalResult> func = (MySqlCommand cmd) =>
             {
-                rid = 0;
                 for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
-                if (cmd.Parameters.Count < 1) return false;
+                if (cmd.Parameters.Count < 1) return result;
 
                 var dap = this.DataAdapter();
                 dap.SelectCommand = cmd;
@@ -599,7 +601,7 @@ namespace Snow.Orm
                     Log.Debug(Debug(sql, parames), e);
 #endif
                     tb.Dispose();
-                    return false;
+                    return result;
                 }
                 finally
                 {
@@ -610,13 +612,13 @@ namespace Snow.Orm
                     }
                     if (dap != null) dap.Dispose();
                 }
-                if (tb == null || tb.Rows.Count < 1 || tb.Columns.Count < 2) return false;
-                var num = tb.Rows[0][0].ToInt(0);
-                rid = tb.Rows[0][1].ToInt(-1);
+                if (tb == null || tb.Rows.Count < 1 || tb.Columns.Count < 2) return result;
+                result.Rows = tb.Rows[0][0].ToInt(0);
+                result.Id = tb.Rows[0][1].ToInt(-1);
                 tb.Dispose();
-                if (rid > 0) return true;
-                if (num > 0) return true;
-                return false;
+                if (result.Id > 0) { result.Success = true; return result; }
+                if (result.Rows > 0) { result.Success = true; return result; }
+                return result;
 
             };
             if (sess == null)
@@ -624,15 +626,15 @@ namespace Snow.Orm
                 using (var conn = this.Connection(WriteConnStr))
                 using (var cmd = this.Command(sql, conn))
                 {
-                    return func(cmd, out id);
+                    return func(cmd);
                 }
             }
             else
             {
                 sess._Command.CommandText = sql;
-                var ok = func(sess._Command, out id);
-                if (!ok) sess.Rollback();
-                return ok;
+                result = func(sess._Command);
+                if (!result.Success) sess.Rollback();
+                return result;
             }
         }
         delegate TResult FuncEx<in T1, T2, out TResult>(T1 t1, out T2 t2);
@@ -645,12 +647,11 @@ namespace Snow.Orm
         /// <param name="sqlString"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public bool Exec(string sqlString, params object[] args)
+        public DalResult Exec(string sqlString, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlString)) { throw new Exception("数据库操作命令不能为空"); }
             var cmd = GetRawSql(sqlString, args);
-            var rows = 0;
-            try { return Write(null,cmd.SqlString, cmd.SqlParams, out rows); }
+            try { return Write(null, cmd.SqlString, cmd.SqlParams); }
             catch (Exception) { throw; }
             finally
             {

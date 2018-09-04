@@ -33,22 +33,6 @@ namespace Snow.Orm
             x.Params.Clear();
         }, 100);
 
-        //void reset()
-        //{
-        //    this._Columns.Clear();
-        //    this._GroupBy = string.Empty;
-        //    this._Having = string.Empty;
-        //    this._Join.Clear();
-        //    this._OmitColumns.Clear();
-        //    this._OrderBy.Clear();
-        //    this._SetColumns.Clear();
-        //    Array.Clear(this._Page, 0, this._Page.Length);
-        //    this.IDCondition.Clear();
-        //    this.OtherCondition.Clear();
-        //    this.IsKeyCondition = false;
-        //    this.OtherCondition.Clear();
-        //    this.Params.Clear();
-        //}
         public void Dispose()
         {
             this.Dispose(true);
@@ -70,9 +54,6 @@ namespace Snow.Orm
                 var obj = pool.GetObject();
                 obj.Disposed = false;
                 return obj;
-                //lock (_obj)
-                //{
-                //}
             }
         }
         public bool Disposed { set; get; } = false;

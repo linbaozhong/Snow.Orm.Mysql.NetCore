@@ -10,7 +10,7 @@ namespace Snow.Orm
     public partial class Table<T>
     {
         #region Insert
-        public bool Insert(T bean, out long id)
+        public DalResult Insert(T bean)
         {
             if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
             List<string> _Fields = new List<string>();
@@ -26,22 +26,23 @@ namespace Snow.Orm
                 }
             }
             var sql = "INSERT INTO " + TableString + " (" + string.Join(",", _Fields) + ") VALUES(" + string.Join(",", _Values) + "); select ROW_COUNT(),LAST_INSERT_ID();";
-            if (Db.Insert(_Session, sql, _Params, out id))
+
+            var result = Db.Insert(_Session, sql, _Params);
+            if (result.Success)
             {
-                _OnInsert.Invoke(id);
-                return true;
+                _OnInsert.Invoke(result.Id);
             }
-            return false;
+            return result;
         }
-        public bool Insert(T bean)
-        {
-            long id = 0;
-            return Insert(bean, out id);
-        }
+        //public DalResult Insert(T bean)
+        //{
+        //    long id = 0;
+        //    return Insert(bean, out id);
+        //}
         #endregion
 
         #region Update
-        public bool Update(T bean, out int rows)
+        public DalResult Update(T bean)
         {
             if (bean == null || bean.Count == 0) { throw new Ex("bean 不能为 NULL", Ex.Null); }
             var _SetColumns = new List<string>();
@@ -68,16 +69,15 @@ namespace Snow.Orm
             var sql = "UPDATE " + TableString + " SET " + string.Join(",", _SetColumns) + $" WHERE {DB.GetName("ID")}={id};";
 
             if (_SetColumns.Count == 0) { throw new Ex("SQL语法错误", Ex.Syntax); }
-
-            if (Db.Write(_Session, sql, _Params, out rows))
+            var result = Db.Write(_Session, sql, _Params);
+            if (result.Success)
             {
                 _OnUpdate.Invoke(id);
-                return true;
             }
-            return false;
+            return result;
         }
 
-        public bool Update(long id, T bean, out int rows)
+        public DalResult Update(long id, T bean)
         {
             if (id == 0) { throw new Ex("id = 0 错误", Ex.BadParameter); }
             if (bean == null || bean.Count == 0) { throw new Ex("bean 不能为 NULL", Ex.Null); }
@@ -102,13 +102,12 @@ namespace Snow.Orm
             //if (Db.IsDebug) Db.ShowSqlString(sql, _Params);
 
             if (_SetColumns.Count == 0) { throw new Ex("SQL语法错误", Ex.Syntax); }
-
-            if (Db.Write(_Session, sql, _Params, out rows))
+            var result = Db.Write(_Session, sql, _Params);
+            if (result.Success)
             {
                 _OnUpdate.Invoke(id);
-                return true;
             }
-            return false;
+            return result;
         }
         /// <summary>
         /// 原生UPDATE
@@ -117,7 +116,7 @@ namespace Snow.Orm
         /// <param name="setString">SET字符串,"a=? and b=?"</param>
         /// <param name="args">参数值</param>
         /// <returns></returns>
-        public bool Update(out int rows, long id, string setString, params object[] args)
+        public DalResult Update(long id, string setString, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(setString)) { throw new Ex("数据库操作命令不能为空", Ex.BadParameter); }
             var sql = new StringBuilder(200);
@@ -128,14 +127,14 @@ namespace Snow.Orm
             sql.Append(cmd.SqlString);
             sql.Append($" WHERE {DB.GetName("ID")}={id};");
 
-            if (Db.Write(_Session, sql.ToString(), cmd.SqlParams, out rows))
+            var result = Db.Write(_Session, sql.ToString(), cmd.SqlParams);
+            if (result.Success)
             {
                 _OnUpdate.Invoke(id);
-                return true;
             }
-            return false;
+            return result;
         }
-        public bool Update<V>(long id, string col, V val, out int rows)
+        public DalResult Update<V>(long id, string col, V val)
         {
             if (val == null || string.IsNullOrWhiteSpace(col)) { throw new Ex("参数不能为 NULL", Ex.BadParameter); }
 
@@ -147,13 +146,12 @@ namespace Snow.Orm
                 sql = "UPDATE " + TableString + " SET " + DB.GetCondition(col) + $" WHERE {DB.GetName("ID")}={id};";
             }
             else { throw new Ex(col + "列不存在", Ex.NotFound); }
-
-            if (Db.Write(out rows, sql, _Param))
+            var result = Db.Write(sql, _Param);
+            if (result.Success)
             {
                 _OnUpdate.Invoke(id);
-                return true;
             }
-            return false;
+            return result;
         }
         /// <summary>
         /// Update
@@ -161,7 +159,7 @@ namespace Snow.Orm
         /// <param name="cond">Sql 查询条件对象</param>
         /// <param name="rows">返回受影响的行数</param>
         /// <returns></returns>
-        public bool Update(Sql cond, out int rows)
+        public DalResult Update(Sql cond)
         {
             if (cond == null) { throw new Ex("cond 不能为 NULL", Ex.Null); }
 
@@ -173,12 +171,12 @@ namespace Snow.Orm
                 {
                     throw new Ex("SQL语法错误", Ex.Syntax);
                 }
-                if (Db.Write(_Session, sql, cond.Params, out rows))
+                var result = Db.Write(_Session, sql, cond.Params);
+                if (result.Success)
                 {
                     OnUpdate(GetCacheIds(cond));
-                    return true;
                 }
-                return false;
+                return result;
             }
             catch { throw; }
             finally { if (!cond.Disposed) cond.Dispose(); }
@@ -190,9 +188,9 @@ namespace Snow.Orm
         /// <param name="col"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public bool Incr(long id, string col, int val = 1)
+        public DalResult Incr(long id, string col, int val = 1)
         {
-            if (val == 0) return true;
+            if (val == 0) return DalResult.Factory;
             return IncrDecr(id, col, val);
         }
         /// <summary>
@@ -202,12 +200,12 @@ namespace Snow.Orm
         /// <param name="col"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public bool Decr(long id, string col, int val = 1)
+        public DalResult Decr(long id, string col, int val = 1)
         {
-            if (val == 0) return true;
+            if (val == 0) return DalResult.Factory;
             return IncrDecr(id, col, val, "-");
         }
-        bool IncrDecr(long id, string col, int val, string op = "+")
+        DalResult IncrDecr(long id, string col, int val, string op = "+")
         {
             string sql = null;
             if (_ColumnDictionary.ContainsKey(col))
@@ -215,52 +213,48 @@ namespace Snow.Orm
                 sql = "UPDATE " + TableString + " SET " + DB.GetName(col) + Op.Eq + DB.GetName(col) + $"{op}{val} WHERE {DB.GetName("ID")}={id};";
             }
             else { throw new Ex(col + "列不存在", Ex.NotFound); }
-            int rows = 0;
-            if (Db.Write(out rows, sql))
+            var result = Db.Write(sql);
+            if (result.Success)
             {
                 _OnUpdate.Invoke(id);
-                return true;
             }
-            return false;
+            return result;
         }
         #endregion
 
         #region Delete
-        public bool Delete(long id)
+        public DalResult Delete(long id)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")}={id};";
-            int rows = 0;
-            if (Db.Write(out rows, sql))
+            var result = Db.Write( sql);
+            if (result.Success)
             {
                 _OnDelete.Invoke(id);
-                return true;
             }
-            return false;
+            return result;
         }
-        public bool Delete(IEnumerable<long> ids)
+        public DalResult Delete(IEnumerable<long> ids)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")} in ({string.Join(",", ids)});";
-            int rows = 0;
-            if (Db.Write(out rows, sql))
+            var result = Db.Write(sql);
+            if (result.Success)
             {
                 OnDelete(ids as long[]);
-                return true;
             }
-            return false;
+            return result;
         }
-        public bool Delete(Sql cond)
+        public DalResult Delete(Sql cond)
         {
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             try
             {
                 var sql = "DELETE FROM " + TableString + cond.GetWhereString() + ";";
-                int rows = 0;
-                if (Db.Write(out rows, sql))
+                var result = Db.Write(sql);
+                if (result.Success)
                 {
                     OnUpdate(GetCacheIds(cond));
-                    return true;
                 }
-                return false;
+                return result;
             }
             catch { throw; }
             finally { if (cond != null && !cond.Disposed) cond.Dispose(); }
