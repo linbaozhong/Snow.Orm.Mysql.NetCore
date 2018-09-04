@@ -36,14 +36,22 @@ namespace Snow.Orm
         /// </summary>
         public string Name { private set; get; }
 
-        public log4net.ILog Log { get { return Db.Log; } }
+        private Session _Session = null;
+        public Session GetSession()
+        {
+            _Session = _Session._Connection == null ? new Session(Db.WriteConnStr) : _Session;
+            return _Session;
+        }
+
+        private log4net.ILog Log { get { return Db.Log; } }
+
         /// <summary>
         /// 固有公共属性(继承类必须排除)
         /// </summary>
         private static HashSet<string> OmitProperties = new HashSet<string>(
             new string[] { "Item", "Comparer", "Keys", "Values", "Count", "Disposed" }, StringComparer.OrdinalIgnoreCase);
 
-        public Table(DB db, TableTypes type = TableTypes.Default)
+        public Table(DB db, TableTypes type = TableTypes.Default, Action<long> OnInsert = null, Action<long> OnUpdate = null, Action<long> OnDelete = null)
         {
             Db = db;
             Type objType = typeof(T);
@@ -106,11 +114,27 @@ namespace Snow.Orm
                     ListCache = new Cache<string, long[]>(5, 50);
                     break;
             }
+            // 委托
+            if (OnInsert != null) _OnInsert = OnInsert;
+            if (OnUpdate != null) _OnUpdate = OnUpdate;
+            if (OnDelete != null) _OnDelete = OnDelete;
         }
 
-        public void Debug(string msg)
+        /// <summary>
+        /// 输出错误消息
+        /// </summary>
+        /// <param name="msg"></param>
+        public void Error(string msg)
         {
             Log.Error(msg);
+        }
+        /// <summary>
+        /// 输出调试消息
+        /// </summary>
+        /// <param name="msg"></param>
+        public void Debug(string msg)
+        {
+            Log.Debug(msg);
         }
     }
 

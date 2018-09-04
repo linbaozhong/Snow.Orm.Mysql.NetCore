@@ -10,7 +10,7 @@ namespace Snow.Orm
     public partial class Table<T>
     {
         #region Insert
-        public bool Insert(T bean, ref long id)
+        public bool Insert(T bean, out long id)
         {
             if (bean == null || bean.Count == 0) { throw new Exception("bean 不能为 NULL"); }
             List<string> _Fields = new List<string>();
@@ -26,9 +26,9 @@ namespace Snow.Orm
                 }
             }
             var sql = "INSERT INTO " + TableString + " (" + string.Join(",", _Fields) + ") VALUES(" + string.Join(",", _Values) + "); select ROW_COUNT(),LAST_INSERT_ID();";
-            if (Db.Insert(sql, _Params, ref id))
+            if (Db.Insert(_Session, sql, _Params, out id))
             {
-                OnInsert();
+                _OnInsert.Invoke(id);
                 return true;
             }
             return false;
@@ -36,12 +36,12 @@ namespace Snow.Orm
         public bool Insert(T bean)
         {
             long id = 0;
-            return Insert(bean, ref id);
+            return Insert(bean, out id);
         }
         #endregion
 
         #region Update
-        public bool Update(T bean)
+        public bool Update(T bean, out int rows)
         {
             if (bean == null || bean.Count == 0) { throw new Ex("bean 不能为 NULL", Ex.Null); }
             var _SetColumns = new List<string>();
@@ -69,15 +69,15 @@ namespace Snow.Orm
 
             if (_SetColumns.Count == 0) { throw new Ex("SQL语法错误", Ex.Syntax); }
 
-            if (Db.Write(sql, _Params))
+            if (Db.Write(_Session, sql, _Params, out rows))
             {
-                OnUpdate(id);
+                _OnUpdate.Invoke(id);
                 return true;
             }
             return false;
         }
 
-        public bool Update(long id, T bean)
+        public bool Update(long id, T bean, out int rows)
         {
             if (id == 0) { throw new Ex("id = 0 错误", Ex.BadParameter); }
             if (bean == null || bean.Count == 0) { throw new Ex("bean 不能为 NULL", Ex.Null); }
@@ -103,9 +103,9 @@ namespace Snow.Orm
 
             if (_SetColumns.Count == 0) { throw new Ex("SQL语法错误", Ex.Syntax); }
 
-            if (Db.Write(sql, _Params))
+            if (Db.Write(_Session, sql, _Params, out rows))
             {
-                OnUpdate(id);
+                _OnUpdate.Invoke(id);
                 return true;
             }
             return false;
@@ -117,7 +117,7 @@ namespace Snow.Orm
         /// <param name="setString">SET字符串,"a=? and b=?"</param>
         /// <param name="args">参数值</param>
         /// <returns></returns>
-        public bool Update(long id, string setString, params object[] args)
+        public bool Update(out int rows, long id, string setString, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(setString)) { throw new Ex("数据库操作命令不能为空", Ex.BadParameter); }
             var sql = new StringBuilder(200);
@@ -128,14 +128,14 @@ namespace Snow.Orm
             sql.Append(cmd.SqlString);
             sql.Append($" WHERE {DB.GetName("ID")}={id};");
 
-            if (Db.Write(sql.ToString(), cmd.SqlParams))
+            if (Db.Write(_Session, sql.ToString(), cmd.SqlParams, out rows))
             {
-                OnUpdate(id);
+                _OnUpdate.Invoke(id);
                 return true;
             }
             return false;
         }
-        public bool Update<V>(long id, string col, V val)
+        public bool Update<V>(long id, string col, V val, out int rows)
         {
             if (val == null || string.IsNullOrWhiteSpace(col)) { throw new Ex("参数不能为 NULL", Ex.BadParameter); }
 
@@ -148,14 +148,20 @@ namespace Snow.Orm
             }
             else { throw new Ex(col + "列不存在", Ex.NotFound); }
 
-            if (Db.Write(sql, _Param))
+            if (Db.Write(out rows, sql, _Param))
             {
-                OnUpdate(id);
+                _OnUpdate.Invoke(id);
                 return true;
             }
             return false;
         }
-        public bool Update(Sql cond)
+        /// <summary>
+        /// Update
+        /// </summary>
+        /// <param name="cond">Sql 查询条件对象</param>
+        /// <param name="rows">返回受影响的行数</param>
+        /// <returns></returns>
+        public bool Update(Sql cond, out int rows)
         {
             if (cond == null) { throw new Ex("cond 不能为 NULL", Ex.Null); }
 
@@ -167,7 +173,7 @@ namespace Snow.Orm
                 {
                     throw new Ex("SQL语法错误", Ex.Syntax);
                 }
-                if (Db.Write(sql, cond.Params))
+                if (Db.Write(_Session, sql, cond.Params, out rows))
                 {
                     OnUpdate(GetCacheIds(cond));
                     return true;
@@ -209,10 +215,10 @@ namespace Snow.Orm
                 sql = "UPDATE " + TableString + " SET " + DB.GetName(col) + Op.Eq + DB.GetName(col) + $"{op}{val} WHERE {DB.GetName("ID")}={id};";
             }
             else { throw new Ex(col + "列不存在", Ex.NotFound); }
-
-            if (Db.Write(sql))
+            int rows = 0;
+            if (Db.Write(out rows, sql))
             {
-                OnUpdate(id);
+                _OnUpdate.Invoke(id);
                 return true;
             }
             return false;
@@ -223,9 +229,10 @@ namespace Snow.Orm
         public bool Delete(long id)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")}={id};";
-            if (Db.Write(sql))
+            int rows = 0;
+            if (Db.Write(out rows, sql))
             {
-                OnUpdate(id);
+                _OnDelete.Invoke(id);
                 return true;
             }
             return false;
@@ -233,9 +240,10 @@ namespace Snow.Orm
         public bool Delete(IEnumerable<long> ids)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")} in ({string.Join(",", ids)});";
-            if (Db.Write(sql))
+            int rows = 0;
+            if (Db.Write(out rows, sql))
             {
-                OnUpdate(ids as long[]);
+                OnDelete(ids as long[]);
                 return true;
             }
             return false;
@@ -246,7 +254,8 @@ namespace Snow.Orm
             try
             {
                 var sql = "DELETE FROM " + TableString + cond.GetWhereString() + ";";
-                if (Db.Write(sql))
+                int rows = 0;
+                if (Db.Write(out rows, sql))
                 {
                     OnUpdate(GetCacheIds(cond));
                     return true;

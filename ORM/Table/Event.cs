@@ -7,15 +7,14 @@ namespace Snow.Orm
 {
     public partial class Table<T>
     {
+        Action<long> _OnInsert = id => { };
+        Action<long> _OnUpdate = id => { RowCache.Remove(id); };
+        Action<long> _OnDelete = id => { RowCache.Remove(id); };
         /// <summary>
         /// insert 以后
         /// </summary>
         public void OnInsert()
         {
-            Task.Run(() =>
-            {
-                ListCache.Clear();
-            });
         }
         /// <summary>
         /// update 以后
@@ -23,57 +22,35 @@ namespace Snow.Orm
         /// <param name="id"></param>
         public void OnUpdate(long id)
         {
-            Task.Run(() =>
-            {
-                RowCache.Remove(id);
-                ListCache.Clear();
-            });
+            RowCache.Remove(id);
         }
         public void OnUpdate(long[] ids)
         {
             if (ids == null || ids.Length == 0) return;
-            Task.Run(() =>
-            {
-                RowCache.Remove(ids);
-                ListCache.Clear();
-            });
+            RowCache.Remove(ids);
         }
 
-        #region Cache
-        public void RemoveCache(long id)
+        public void OnDelete(long id)
         {
             RowCache.Remove(id);
         }
-        public void RemoveCache(long[] ids)
+        public void OnDelete(long[] ids)
         {
-            Task.Run(() =>
-            {
-                RowCache.Remove(ids);
-            });
+            if (ids == null || ids.Length == 0) return;
+            RowCache.Remove(ids);
         }
-        public void RemoveListCache(T bean, string orderby = null, uint count = 1000)
+        public void OnUpdate(T bean, string orderby = null, uint count = 1000)
         {
-            Task.Run(() =>
-            {
-                ListCache.Remove(CombineCacheKey(bean, orderby, count));
-            });
+            ListCache.Remove(CombineCacheKey(bean, orderby, count));
         }
-        public void RemoveListCache<V>(string col, V val)
+        public void OnUpdate<V>(string col, V val)
         {
-            Task.Run(() =>
-            {
-                ListCache.Remove(CombineCacheKey(col, val));
-            });
+            ListCache.Remove(CombineCacheKey(col, val));
         }
-        public void RemoveListCache(Sql cond)
+        public void OnUpdate(Sql cond)
         {
-            Task.Run(() =>
-            {
-                ListCache.Remove(CombineCacheKey(cond));
-                if (!cond.Disposed) cond.Dispose();
-            });
+            ListCache.Remove(CombineCacheKey(cond));
+            if (!cond.Disposed) cond.Dispose();
         }
-        #endregion
-
     }
 }

@@ -474,7 +474,7 @@ namespace Snow.Orm
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             try
             {
-                var _sql = string.Concat("SELECT ", SelectColumnString, FromTableString, cond.GetWhereString(), cond.GetGroupbyString(), cond.GetOrderbyString(), " limit 1;");
+                var _sql = string.Concat("SELECT ", GetSelectColumnString(cond), FromTableString, cond.GetWhereString(), cond.GetGroupbyString(), cond.GetOrderbyString(), " limit 1;");
                 return Db.ReadSingle(_sql, cond.Params);
             }
             catch { throw; }

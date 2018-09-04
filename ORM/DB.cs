@@ -71,7 +71,7 @@ namespace Snow.Orm
         public bool IsDebug { private set; get; }
         private uint TimeOut = 0;       //数据库连接超时，单位秒，默认0表示由系统控制
         private string ReadConnStr = null;  //数据库读连接字符串
-        private string WriteConnStr = null;	//数据库写连接字符串
+        public string WriteConnStr = null;	//数据库写连接字符串
 
         public static Dictionary<Type, MySqlDbType> MySqlDbTypeMap = GetTypeMap();
         private static Dictionary<Type, MySqlDbType> GetTypeMap()
@@ -459,8 +459,9 @@ namespace Snow.Orm
         /// <param name="sql"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public bool Write(string sql, DbParameter param = null)
+        public bool Write(out int rows,string sql, DbParameter param = null)
         {
+            rows = 0;
             if (sql == null || sql.Length < 3) return false;
             using (var conn = this.Connection(WriteConnStr))
             using (var cmd = this.Command(sql, conn))
@@ -481,37 +482,58 @@ namespace Snow.Orm
                 }
             }
         }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="sql"></param>
         /// <param name="parames"></param>
+        /// <param name="rows">返回受影响的行数</param>
         /// <returns></returns>
-        public bool Write(string sql, List<DbParameter> parames)
+        public bool Write(Session sess, string sql, List<DbParameter> parames, out int rows)
         {
+            rows = 0;
             if (sql == null || sql.Length < 3) return false;
-            using (var conn = this.Connection(WriteConnStr))
-            using (var cmd = this.Command(sql, conn))
+
+            FuncEx<MySqlCommand, List<DbParameter>, int, bool> func = (MySqlCommand cmd, List<DbParameter> _parames, out int _num) =>
             {
                 try
                 {
-                    if (parames != null)
+                    if (_parames != null)
                     {
-                        for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
+                        for (int i = 0; i < _parames.Count; i++) { cmd.Parameters.Add(_parames[i]); }
                     }
-                    cmd.Connection.Open();
-                    cmd.ExecuteNonQuery();
+                    if (cmd.Connection.State == ConnectionState.Closed) cmd.Connection.Open();
+                    _num = cmd.ExecuteNonQuery();
                     return true;
                 }
                 catch
                 {
 #if DEBUG
-                    Log.Debug(Debug(sql, parames));
+                    Log.Debug(Debug(sql, _parames));
 #endif
-                    throw;
+                    _num = 0;
+                    return false;
+                }
+            };
+            if (sess == null)
+            {
+                using (var conn = this.Connection(WriteConnStr))
+                using (var cmd = this.Command(sql, conn))
+                {
+                    return func(cmd, parames, out rows);
                 }
             }
+            else
+            {
+                sess._Command.CommandText = sql;
+                var ok = func(sess._Command, parames, out rows);
+                if (!ok) sess.Rollback();
+                return ok;
+            }
         }
+        delegate TResult FuncEx<in T1, in T2, T3, out TResult>(T1 t1, T2 t2, out T3 t3);
+
         /// <summary>
         /// 执行存储过程
         /// </summary>
@@ -556,12 +578,14 @@ namespace Snow.Orm
         /// <param name="sql"></param>
         /// <param name="parames"></param>
         /// <returns></returns>
-		internal bool Insert(string sql, List<DbParameter> parames, ref long id)
+        internal bool Insert(Session sess, string sql, List<DbParameter> parames, out long id)
         {
+            id = 0;
             if (sql == null || parames == null || sql.Length < 3 || parames.Count < 1) return false;
-            using (var conn = this.Connection(WriteConnStr))
-            using (var cmd = this.Command(sql, conn))
+
+            FuncEx<MySqlCommand, long, bool> func = (MySqlCommand cmd, out long rid) =>
             {
+                rid = 0;
                 for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
                 if (cmd.Parameters.Count < 1) return false;
 
@@ -571,7 +595,9 @@ namespace Snow.Orm
                 try { dap.Fill(tb); }
                 catch (Exception e)
                 {
+#if DEBUG
                     Log.Debug(Debug(sql, parames), e);
+#endif
                     tb.Dispose();
                     return false;
                 }
@@ -586,13 +612,30 @@ namespace Snow.Orm
                 }
                 if (tb == null || tb.Rows.Count < 1 || tb.Columns.Count < 2) return false;
                 var num = tb.Rows[0][0].ToInt(0);
-                id = tb.Rows[0][1].ToInt(-1);
+                rid = tb.Rows[0][1].ToInt(-1);
                 tb.Dispose();
-                if (id > 0) return true;
+                if (rid > 0) return true;
                 if (num > 0) return true;
                 return false;
+
+            };
+            if (sess == null)
+            {
+                using (var conn = this.Connection(WriteConnStr))
+                using (var cmd = this.Command(sql, conn))
+                {
+                    return func(cmd, out id);
+                }
+            }
+            else
+            {
+                sess._Command.CommandText = sql;
+                var ok = func(sess._Command, out id);
+                if (!ok) sess.Rollback();
+                return ok;
             }
         }
+        delegate TResult FuncEx<in T1, T2, out TResult>(T1 t1, out T2 t2);
 
         #region 原生SQL
         static ConcurrentDictionary<string, string> SqlDict = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -606,7 +649,8 @@ namespace Snow.Orm
         {
             if (string.IsNullOrWhiteSpace(sqlString)) { throw new Exception("数据库操作命令不能为空"); }
             var cmd = GetRawSql(sqlString, args);
-            try { return Write(cmd.SqlString, cmd.SqlParams); }
+            var rows = 0;
+            try { return Write(null,cmd.SqlString, cmd.SqlParams, out rows); }
             catch (Exception) { throw; }
             finally
             {
@@ -732,8 +776,10 @@ namespace Snow.Orm
                         if (sql.SqlParams.Contains(LastIdParameter))
                         {
                             var dr = cmd.ExecuteReader();
-                            if (dr.Read() && dr[0].ToInt() > 0)
+                            if (dr.Read())
                             {
+                                if (dr[0].ToInt() == 0) { dr.Close(); cmd.Transaction.Rollback(); return false; }
+
                                 last_id = dr[1].ToLong(-1);
                             }
                             dr.Close();
