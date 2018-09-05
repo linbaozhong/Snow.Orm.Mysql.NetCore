@@ -58,6 +58,7 @@
   <ItemGroup>
     <Reference Include="adeway">
       <HintPath>..\..\renwuto\rwt.api3\refer\adeway.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Http.Features">
       <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.http.features\2.1.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Features.dll</HintPath>
