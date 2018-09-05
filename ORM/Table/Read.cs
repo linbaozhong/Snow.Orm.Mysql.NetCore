@@ -27,13 +27,13 @@ namespace Snow.Orm
             var _sql = string.Concat("SELECT ", args.Length == 0 ? SelectColumnString : GetSelectColumnStringByArgs(args), FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
             return _Get(_sql, null, args);
         }
+        //[Obsolete]
         /// <summary>
         /// 读取缓存中的数据对象的指定字段
         /// </summary>
         /// <param name="id">主键</param>
         /// <param name="args">返回的字段</param>
         /// <returns></returns>
-        [Obsolete]
         public T GetCache(long id, params string[] args)
         {
             if (id < 0) return null;

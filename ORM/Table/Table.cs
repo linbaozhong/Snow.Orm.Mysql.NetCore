@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Reflection;
 using System.Text;
 using adeway;
+using System.Transactions;
 
 namespace Snow.Orm
 {
@@ -35,13 +36,6 @@ namespace Snow.Orm
         /// 数据库表名
         /// </summary>
         public string Name { private set; get; }
-
-        private Session _Session = null;
-        public Session GetSession()
-        {
-            _Session = _Session._Connection == null ? new Session(Db.WriteConnStr) : _Session;
-            return _Session;
-        }
 
         private log4net.ILog Log { get { return Db.Log; } }
 
@@ -119,6 +113,27 @@ namespace Snow.Orm
             if (OnUpdate != null) _OnUpdate = OnUpdate;
             if (OnDelete != null) _OnDelete = OnDelete;
         }
+
+        #region 会话
+        private Session _Session = null;
+        /// <summary>
+        /// 返回使用相同Connection的事务性会话
+        /// </summary>
+        /// <returns></returns>
+        public Session GetSession()
+        {
+            _Session = new Session(Db.WriteConnStr);
+            return _Session;
+        }
+        /// <summary>
+        /// 返回事务性代码块会话
+        /// </summary>
+        /// <returns></returns>
+        public TransactionScope GetScopeSession()
+        {
+            return new TransactionScope();
+        }
+        #endregion
 
         /// <summary>
         /// 输出错误消息

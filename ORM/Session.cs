@@ -11,14 +11,14 @@ namespace Snow.Orm
 {
     #region 会话
 
-    public class Session
+    public class Session 
     {
         internal MySqlConnection _Connection = null;
         internal MySqlCommand _Command = null;
         private MySqlTransaction _Transaction = null;
         public Session(string connstring)
         {
-            if (_Connection.State == ConnectionState.Closed) _Connection = new MySqlConnection(connstring);
+            _Connection = new MySqlConnection(connstring);
         }
         public void BeginTransaction()
         {

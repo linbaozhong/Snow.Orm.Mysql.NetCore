@@ -146,7 +146,7 @@ namespace Snow.Orm
                 sql = "UPDATE " + TableString + " SET " + DB.GetCondition(col) + $" WHERE {DB.GetName("ID")}={id};";
             }
             else { throw new Ex(col + "列不存在", Ex.NotFound); }
-            var result = Db.Write(sql, _Param);
+            var result = Db.Write(_Session, sql, _Param);
             if (result.Success)
             {
                 _OnUpdate.Invoke(id);
@@ -213,7 +213,7 @@ namespace Snow.Orm
                 sql = "UPDATE " + TableString + " SET " + DB.GetName(col) + Op.Eq + DB.GetName(col) + $"{op}{val} WHERE {DB.GetName("ID")}={id};";
             }
             else { throw new Ex(col + "列不存在", Ex.NotFound); }
-            var result = Db.Write(sql);
+            var result = Db.Write(_Session, sql);
             if (result.Success)
             {
                 _OnUpdate.Invoke(id);
@@ -226,7 +226,7 @@ namespace Snow.Orm
         public DalResult Delete(long id)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")}={id};";
-            var result = Db.Write( sql);
+            var result = Db.Write(_Session, sql);
             if (result.Success)
             {
                 _OnDelete.Invoke(id);
@@ -236,7 +236,7 @@ namespace Snow.Orm
         public DalResult Delete(IEnumerable<long> ids)
         {
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")} in ({string.Join(",", ids)});";
-            var result = Db.Write(sql);
+            var result = Db.Write(_Session, sql);
             if (result.Success)
             {
                 OnDelete(ids as long[]);
@@ -249,7 +249,7 @@ namespace Snow.Orm
             try
             {
                 var sql = "DELETE FROM " + TableString + cond.GetWhereString() + ";";
-                var result = Db.Write(sql);
+                var result = Db.Write(_Session, sql);
                 if (result.Success)
                 {
                     OnUpdate(GetCacheIds(cond));

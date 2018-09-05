@@ -459,29 +459,49 @@ namespace Snow.Orm
         /// <param name="sql"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public DalResult Write(string sql, DbParameter param = null)
+        public DalResult Write(Session sess, string sql, DbParameter param = null)
         {
             var result = DalResult.Factory;
             if (sql == null || sql.Length < 3) return result;
-            using (var conn = this.Connection(WriteConnStr))
-            using (var cmd = this.Command(sql, conn))
+
+
+            FuncEx<MySqlCommand, DbParameter, int, bool> func = (MySqlCommand cmd, DbParameter _parames, out int _num) =>
             {
                 if (param != null) cmd.Parameters.Add(param);
                 try
                 {
-                    cmd.Connection.Open();
-                    result.Rows = cmd.ExecuteNonQuery();
-                    result.Success = true;
-                    return result;
+                    if (cmd.Connection.State == ConnectionState.Closed) cmd.Connection.Open();
+                    _num = cmd.ExecuteNonQuery();
+                    return true;
                 }
                 catch
                 {
 #if DEBUG
                     Log.Debug(Debug(sql, param));
 #endif
-                    return result;
+                    _num = 0;
+                    return false;
+                }
+            };
+
+            var rows = 0;
+            if (sess == null)
+            {
+                using (var conn = this.Connection(WriteConnStr))
+                using (var cmd = this.Command(sql, conn))
+                {
+                    result.Success = func(cmd, param, out rows);
                 }
             }
+            else
+            {
+                sess._Command.CommandText = sql;
+                sess._Command.Parameters.Clear();
+                result.Success = func(sess._Command, param, out rows);
+                if (!result.Success) sess.Rollback();
+            }
+            result.Rows = rows;
+            return result;
         }
 
         /// <summary>
@@ -529,6 +549,7 @@ namespace Snow.Orm
             else
             {
                 sess._Command.CommandText = sql;
+                sess._Command.Parameters.Clear();
                 result.Success = func(sess._Command, parames, out rows);
                 if (!result.Success) sess.Rollback();
             }
@@ -605,11 +626,6 @@ namespace Snow.Orm
                 }
                 finally
                 {
-                    if (cmd != null)
-                    {
-                        if (cmd.Connection != null) cmd.Connection.Close();
-                        cmd.Dispose();
-                    }
                     if (dap != null) dap.Dispose();
                 }
                 if (tb == null || tb.Rows.Count < 1 || tb.Columns.Count < 2) return result;
@@ -632,12 +648,13 @@ namespace Snow.Orm
             else
             {
                 sess._Command.CommandText = sql;
+                sess._Command.Parameters.Clear();
                 result = func(sess._Command);
                 if (!result.Success) sess.Rollback();
                 return result;
             }
         }
-        delegate TResult FuncEx<in T1, T2, out TResult>(T1 t1, out T2 t2);
+        //delegate TResult FuncEx<in T1, T2, out TResult>(T1 t1, out T2 t2);
 
         #region 原生SQL
         static ConcurrentDictionary<string, string> SqlDict = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
