@@ -464,44 +464,42 @@ namespace Snow.Orm
             var result = DalResult.Factory;
             if (sql == null || sql.Length < 3) return result;
 
-
-            FuncEx<MySqlCommand, DbParameter, int, bool> func = (MySqlCommand cmd, DbParameter _parames, out int _num) =>
-            {
-                if (param != null) cmd.Parameters.Add(param);
-                try
-                {
-                    if (cmd.Connection.State == ConnectionState.Closed) cmd.Connection.Open();
-                    _num = cmd.ExecuteNonQuery();
-                    return true;
-                }
-                catch
-                {
-#if DEBUG
-                    Log.Debug(Debug(sql, param));
-#endif
-                    _num = 0;
-                    return false;
-                }
-            };
-
             var rows = 0;
             if (sess == null)
             {
                 using (var conn = this.Connection(WriteConnStr))
                 using (var cmd = this.Command(sql, conn))
                 {
-                    result.Success = func(cmd, param, out rows);
+                    result.Success = _write(cmd, param, out rows);
                 }
             }
             else
             {
                 sess._Command.CommandText = sql;
                 sess._Command.Parameters.Clear();
-                result.Success = func(sess._Command, param, out rows);
+                result.Success = _write(sess._Command, param, out rows);
                 if (!result.Success) sess.Rollback();
             }
             result.Rows = rows;
             return result;
+        }
+        bool _write(MySqlCommand cmd, DbParameter param, out int _num)
+        {
+            if (param != null) cmd.Parameters.Add(param);
+            try
+            {
+                if (cmd.Connection.State == ConnectionState.Closed) cmd.Connection.Open();
+                _num = cmd.ExecuteNonQuery();
+                return true;
+            }
+            catch (Exception e)
+            {
+#if DEBUG
+                Log.Debug(Debug(cmd.CommandText, param), e);
+#endif
+                _num = 0;
+                return false;
+            }
         }
 
         /// <summary>
@@ -516,47 +514,46 @@ namespace Snow.Orm
             var result = DalResult.Factory;
             if (sql == null || sql.Length < 3) return result;
 
-            FuncEx<MySqlCommand, List<DbParameter>, int, bool> func = (MySqlCommand cmd, List<DbParameter> _parames, out int _num) =>
-            {
-                try
-                {
-                    if (_parames != null)
-                    {
-                        for (int i = 0; i < _parames.Count; i++) { cmd.Parameters.Add(_parames[i]); }
-                    }
-                    if (cmd.Connection.State == ConnectionState.Closed) cmd.Connection.Open();
-                    _num = cmd.ExecuteNonQuery();
-                    return true;
-                }
-                catch
-                {
-#if DEBUG
-                    Log.Debug(Debug(sql, _parames));
-#endif
-                    _num = 0;
-                    return false;
-                }
-            };
             var rows = 0;
             if (sess == null)
             {
                 using (var conn = this.Connection(WriteConnStr))
                 using (var cmd = this.Command(sql, conn))
                 {
-                    result.Success = func(cmd, parames, out rows);
+                    result.Success = _write(cmd, parames, out rows);
                 }
             }
             else
             {
                 sess._Command.CommandText = sql;
                 sess._Command.Parameters.Clear();
-                result.Success = func(sess._Command, parames, out rows);
+                result.Success = _write(sess._Command, parames, out rows);
                 if (!result.Success) sess.Rollback();
             }
             result.Rows = rows;
             return result;
         }
-        delegate TResult FuncEx<in T1, in T2, T3, out TResult>(T1 t1, T2 t2, out T3 t3);
+        bool _write(MySqlCommand cmd, List<DbParameter> parames, out int _num)
+        {
+            try
+            {
+                if (parames != null)
+                {
+                    for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
+                }
+                if (cmd.Connection.State == ConnectionState.Closed) cmd.Connection.Open();
+                _num = cmd.ExecuteNonQuery();
+                return true;
+            }
+            catch (Exception e)
+            {
+#if DEBUG
+                Log.Debug(Debug(cmd.CommandText, parames), e);
+#endif
+                _num = 0;
+                return false;
+            }
+        }
 
         /// <summary>
         /// 执行存储过程
@@ -607,54 +604,53 @@ namespace Snow.Orm
             var result = DalResult.Factory;
             if (sql == null || parames == null || sql.Length < 3 || parames.Count < 1) return result;
 
-            Func<MySqlCommand, DalResult> func = (MySqlCommand cmd) =>
-            {
-                for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
-                if (cmd.Parameters.Count < 1) return result;
-
-                var dap = this.DataAdapter();
-                dap.SelectCommand = cmd;
-                var tb = new DataTable();
-                try { dap.Fill(tb); }
-                catch (Exception e)
-                {
-#if DEBUG
-                    Log.Debug(Debug(sql, parames), e);
-#endif
-                    tb.Dispose();
-                    return result;
-                }
-                finally
-                {
-                    if (dap != null) dap.Dispose();
-                }
-                if (tb == null || tb.Rows.Count < 1 || tb.Columns.Count < 2) return result;
-                result.Rows = tb.Rows[0][0].ToInt(0);
-                result.Id = tb.Rows[0][1].ToInt(-1);
-                tb.Dispose();
-                if (result.Id > 0) { result.Success = true; return result; }
-                if (result.Rows > 0) { result.Success = true; return result; }
-                return result;
-
-            };
             if (sess == null)
             {
                 using (var conn = this.Connection(WriteConnStr))
                 using (var cmd = this.Command(sql, conn))
                 {
-                    return func(cmd);
+                    return _insert(cmd, parames);
                 }
             }
             else
             {
                 sess._Command.CommandText = sql;
                 sess._Command.Parameters.Clear();
-                result = func(sess._Command);
+                result = _insert(sess._Command,parames);
                 if (!result.Success) sess.Rollback();
                 return result;
             }
         }
-        //delegate TResult FuncEx<in T1, T2, out TResult>(T1 t1, out T2 t2);
+        DalResult _insert(MySqlCommand cmd, List<DbParameter> parames) 
+        {
+            var result = DalResult.Factory;
+            for (int i = 0; i < parames.Count; i++) { cmd.Parameters.Add(parames[i]); }
+            if (cmd.Parameters.Count < 1) return result;
+
+            var dap = new MySqlDataAdapter();// this.DataAdapter();
+            dap.SelectCommand = cmd;
+            var tb = new DataTable();
+            try { dap.Fill(tb); }
+            catch (Exception e)
+            {
+#if DEBUG
+                Log.Debug(Debug(cmd.CommandText, parames), e);
+#endif
+                tb.Dispose();
+                return result;
+            }
+            finally
+            {
+                if (dap != null) dap.Dispose();
+            }
+            if (tb == null || tb.Rows.Count < 1 || tb.Columns.Count < 2) return result;
+            result.Rows = tb.Rows[0][0].ToInt(0);
+            result.Id = tb.Rows[0][1].ToInt(-1);
+            tb.Dispose();
+            if (result.Id > 0) { result.Success = true; return result; }
+            if (result.Rows > 0) { result.Success = true; return result; }
+            return result;
+        }
 
         #region 原生SQL
         static ConcurrentDictionary<string, string> SqlDict = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);

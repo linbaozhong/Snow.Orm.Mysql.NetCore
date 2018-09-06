@@ -43,9 +43,9 @@ namespace Snow.Orm
         {
             ListCache.Remove(CombineCacheKey(bean, orderby, count));
         }
-        public void OnUpdate<V>(string col, V val)
+        public void OnUpdate<V>(string col, V val, string orderby = null, uint count = 1000)
         {
-            ListCache.Remove(CombineCacheKey(col, val));
+            ListCache.Remove(CombineCacheKey(col, val, orderby, count));
         }
         public void OnUpdate(Sql cond)
         {
