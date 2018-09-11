@@ -492,6 +492,10 @@ namespace Snow.Orm
             var _sql = string.Concat("SELECT ", DB.GetName(col), FromTableString, " WHERE ", DB.SetColumnFunc("id", id), " limit 1;");
             return Db.ReadSingle(_sql);
         }
+        public object GetSingle(string sql)
+        {
+            return Db.ReadSingle(sql);
+        }
         #endregion
 
         #region 其他方法

@@ -686,6 +686,16 @@ namespace Snow.Orm
             {
             }
         }
+        public object ReadSingle(string sqlString, params object[] args)
+        {
+            if (string.IsNullOrWhiteSpace(sqlString)) { throw new Exception("数据库查询字符串不能为空"); }
+            var cmd = GetRawSql(sqlString, args);
+            try { return ReadSingle(cmd.SqlString, cmd.SqlParams); }
+            catch (Exception) { throw; }
+            finally
+            {
+            }
+        }
         /// <summary>
         /// 原生sql命令
         /// 例如：例如：select * from users where age>=? and sex=?
