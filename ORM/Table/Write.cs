@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Text;
-using System.Threading.Tasks;
-using adeway;
 
 namespace Snow.Orm
 {
@@ -25,7 +23,7 @@ namespace Snow.Orm
                     _Params.Add(DB.GetParam(item.Key, item.Value));
                 }
             }
-            var sql = "INSERT INTO " + TableString + " (" + string.Join(",", _Fields) + ") VALUES(" + string.Join(",", _Values) + "); select ROW_COUNT(),LAST_INSERT_ID();";
+            var sql = "INSERT INTO " + TableString + " (" + string.Join(",", _Fields) + ") VALUES(" + string.Join(",", _Values) + ");";
 
             var result = Db.Insert(_Session, sql, _Params);
             if (result.Success)
@@ -34,11 +32,6 @@ namespace Snow.Orm
             }
             return result;
         }
-        //public DalResult Insert(T bean)
-        //{
-        //    long id = 0;
-        //    return Insert(bean, out id);
-        //}
         #endregion
 
         #region Update

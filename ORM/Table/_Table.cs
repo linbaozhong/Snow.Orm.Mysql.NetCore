@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Text;
-using adeway;
 
 namespace Snow.Orm
 {
