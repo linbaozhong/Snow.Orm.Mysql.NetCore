@@ -9,8 +9,13 @@ namespace Snow.Orm
 {
     public abstract class MySqlDB
     {
-
+        /// <summary>
+        /// 列名约束符-前缀
+        /// </summary>
         public const string _RestrictPrefix = "`";
+        /// <summary>
+        /// 列名约束符-后缀
+        /// </summary>
         public const string _RestrictPostfix = "`";
         /// <summary>
         /// insert成功后返回受影响的行数和自增id
@@ -44,7 +49,7 @@ namespace Snow.Orm
             return sp;
         }
         /// <summary>
-        /// 
+        /// 生成查询操作参数
         /// </summary>
         /// <param name="col"></param>
         /// <param name="val"></param>
@@ -70,7 +75,7 @@ namespace Snow.Orm
             return sp;
         }
         /// <summary>
-        /// 
+        /// 生成查询操作参数
         /// </summary>
         /// <param name="col"></param>
         /// <param name="val"></param>
@@ -96,7 +101,7 @@ namespace Snow.Orm
             return sp;
         }
         /// <summary>
-        /// 
+        /// 生成查询操作参数
         /// </summary>
         /// <param name="col"></param>
         /// <param name="val"></param>
@@ -111,7 +116,7 @@ namespace Snow.Orm
             return sp;
         }
         /// <summary>
-        /// 
+        /// 生成查询操作参数
         /// </summary>
         /// <param name="col"></param>
         /// <param name="val"></param>
@@ -181,7 +186,9 @@ namespace Snow.Orm
         }
     }
     #region 会话
-
+    /// <summary>
+    /// 事物会话
+    /// </summary>
     public sealed class Session
     {
         internal MySqlConnection _Connection = null;
