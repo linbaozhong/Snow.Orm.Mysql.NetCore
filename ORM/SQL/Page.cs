@@ -12,7 +12,7 @@ namespace Snow.Orm
         /// 分页{ 页码,页容量 }
         /// </summary>
         uint[] _Page = new uint[2];
-        public string GetPageString()
+        internal string GetPageString()
         {
             if (_Page.Length > 1)
             {

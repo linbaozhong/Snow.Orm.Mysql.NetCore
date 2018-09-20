@@ -48,7 +48,14 @@
     <None Remove=".gitattributes" />
     <None Remove=".gitignore" />
     <None Remove="adeway.dll" />
+    <None Remove="example\Config\log4net.config" />
     <None Remove="jsonar.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="example\Config\log4net.config">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

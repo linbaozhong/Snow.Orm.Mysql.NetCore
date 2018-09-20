@@ -19,6 +19,10 @@ namespace Snow.Orm
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class, Inherited = true)]
     public class OrmColumnAttribute : Attribute
     {
+        /// <summary>
+        /// json列名
+        /// </summary>
+        /// <param name="name"></param>
         public OrmColumnAttribute(string name)
         {
             JsonName = name;
