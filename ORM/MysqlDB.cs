@@ -19,9 +19,11 @@ namespace Snow.Orm
         public static DbParameter GetParam<T>(string col, T val, int maxsize = 0)
         {
             if (string.IsNullOrWhiteSpace(col)) return null;
-            MySqlParameter sp = new MySqlParameter();
-            sp.ParameterName = col;
-            sp.MySqlDbType = MySqlDbTypeMap[typeof(T)];
+            MySqlParameter sp = new MySqlParameter
+            {
+                ParameterName = col,
+                MySqlDbType = MySqlDbTypeMap[typeof(T)]
+            };
             if (val == null)
             {
                 sp.IsNullable = true;
@@ -51,8 +53,10 @@ namespace Snow.Orm
         public static DbParameter GetParam(string col, string val = null, int maxsize = 0)
         {
             if (col == null || col.Length < 1) return null;
-            MySqlParameter sp = new MySqlParameter();
-            sp.ParameterName = col;
+            MySqlParameter sp = new MySqlParameter
+            {
+                ParameterName = col
+            };
             if (val == null)
             {
                 sp.MySqlDbType = MySqlDbType.VarChar;
@@ -75,8 +79,10 @@ namespace Snow.Orm
 		public static DbParameter GetParam(string col, byte[] val, int maxsize = 0)
         {
             if (col == null || col.Length < 1) return null;
-            MySqlParameter sp = new MySqlParameter();
-            sp.ParameterName = col;
+            MySqlParameter sp = new MySqlParameter
+            {
+                ParameterName = col
+            };
             if (val == null)
             {
                 sp.MySqlDbType = MySqlDbType.VarBinary;
@@ -98,8 +104,10 @@ namespace Snow.Orm
 		public static DbParameter GetParam(string col, int val)
         {
             if (col == null || col.Length < 1) return null;
-            MySqlParameter sp = new MySqlParameter(col, MySqlDbType.Int32);
-            sp.Value = val;
+            MySqlParameter sp = new MySqlParameter(col, MySqlDbType.Int32)
+            {
+                Value = val
+            };
             return sp;
         }
         /// <summary>
@@ -111,58 +119,64 @@ namespace Snow.Orm
         public static DbParameter GetParam(string col, decimal val)
         {
             if (col == null || col.Length < 1) return null;
-            MySqlParameter sp = new MySqlParameter(col, MySqlDbType.Decimal);
-            sp.Value = val;
+            MySqlParameter sp = new MySqlParameter(col, MySqlDbType.Decimal)
+            {
+                Value = val
+            };
             return sp;
         }
         protected MySqlConnection Connection(string connectionString) { return new MySqlConnection(connectionString); }
         protected DbCommand Command(string sql, MySqlConnection conn, CommandType type = CommandType.Text, uint timeout = 0)
         {
-            var cmd = new MySqlCommand(sql, conn);
-            cmd.CommandType = type;
+            var cmd = new MySqlCommand(sql, conn)
+            {
+                CommandType = type
+            };
             if (timeout > 0) cmd.CommandTimeout = (int)timeout;
             return cmd;
         }
         protected DbDataAdapter DataAdapter() { return new MySqlDataAdapter(); }
-        private static Dictionary<Type, MySqlDbType> MySqlDbTypeMap = GetTypeMap();
+        private static readonly Dictionary<Type, MySqlDbType> MySqlDbTypeMap = GetTypeMap();
         private static Dictionary<Type, MySqlDbType> GetTypeMap()
         {
-            var typeMap = new Dictionary<Type, MySqlDbType>();
-            typeMap[typeof(byte)] = MySqlDbType.Byte;
-            typeMap[typeof(sbyte)] = MySqlDbType.Byte;
-            typeMap[typeof(short)] = MySqlDbType.Int16;
-            typeMap[typeof(ushort)] = MySqlDbType.UInt16;
-            typeMap[typeof(int)] = MySqlDbType.Int32;
-            typeMap[typeof(uint)] = MySqlDbType.UInt32;
-            typeMap[typeof(long)] = MySqlDbType.Int64;
-            typeMap[typeof(ulong)] = MySqlDbType.UInt64;
-            typeMap[typeof(float)] = MySqlDbType.Float;
-            typeMap[typeof(double)] = MySqlDbType.Double;
-            typeMap[typeof(decimal)] = MySqlDbType.Decimal;
-            typeMap[typeof(bool)] = MySqlDbType.Bit;
-            typeMap[typeof(string)] = MySqlDbType.String;
-            typeMap[typeof(Object)] = MySqlDbType.String;
-            typeMap[typeof(char)] = MySqlDbType.VarChar;
-            typeMap[typeof(Guid)] = MySqlDbType.Guid;
-            typeMap[typeof(DateTime)] = MySqlDbType.DateTime;
-            typeMap[typeof(DateTimeOffset)] = MySqlDbType.Timestamp;
-            typeMap[typeof(byte[])] = MySqlDbType.Binary;
-            typeMap[typeof(byte?)] = MySqlDbType.Byte;
-            typeMap[typeof(sbyte?)] = MySqlDbType.Byte;
-            typeMap[typeof(short?)] = MySqlDbType.Int16;
-            typeMap[typeof(ushort?)] = MySqlDbType.UInt16;
-            typeMap[typeof(int?)] = MySqlDbType.Int32;
-            typeMap[typeof(uint?)] = MySqlDbType.UInt32;
-            typeMap[typeof(long?)] = MySqlDbType.Int64;
-            typeMap[typeof(ulong?)] = MySqlDbType.UInt64;
-            typeMap[typeof(float?)] = MySqlDbType.Float;
-            typeMap[typeof(double?)] = MySqlDbType.Double;
-            typeMap[typeof(decimal?)] = MySqlDbType.Decimal;
-            typeMap[typeof(bool?)] = MySqlDbType.Bit;
-            typeMap[typeof(char?)] = MySqlDbType.VarChar;
-            typeMap[typeof(Guid?)] = MySqlDbType.Guid;
-            typeMap[typeof(DateTime?)] = MySqlDbType.DateTime;
-            typeMap[typeof(DateTimeOffset?)] = MySqlDbType.Timestamp;
+            var typeMap = new Dictionary<Type, MySqlDbType>
+            {
+                [typeof(byte)] = MySqlDbType.Byte,
+                [typeof(sbyte)] = MySqlDbType.Byte,
+                [typeof(short)] = MySqlDbType.Int16,
+                [typeof(ushort)] = MySqlDbType.UInt16,
+                [typeof(int)] = MySqlDbType.Int32,
+                [typeof(uint)] = MySqlDbType.UInt32,
+                [typeof(long)] = MySqlDbType.Int64,
+                [typeof(ulong)] = MySqlDbType.UInt64,
+                [typeof(float)] = MySqlDbType.Float,
+                [typeof(double)] = MySqlDbType.Double,
+                [typeof(decimal)] = MySqlDbType.Decimal,
+                [typeof(bool)] = MySqlDbType.Bit,
+                [typeof(string)] = MySqlDbType.String,
+                [typeof(Object)] = MySqlDbType.String,
+                [typeof(char)] = MySqlDbType.VarChar,
+                [typeof(Guid)] = MySqlDbType.Guid,
+                [typeof(DateTime)] = MySqlDbType.DateTime,
+                [typeof(DateTimeOffset)] = MySqlDbType.Timestamp,
+                [typeof(byte[])] = MySqlDbType.Binary,
+                [typeof(byte?)] = MySqlDbType.Byte,
+                [typeof(sbyte?)] = MySqlDbType.Byte,
+                [typeof(short?)] = MySqlDbType.Int16,
+                [typeof(ushort?)] = MySqlDbType.UInt16,
+                [typeof(int?)] = MySqlDbType.Int32,
+                [typeof(uint?)] = MySqlDbType.UInt32,
+                [typeof(long?)] = MySqlDbType.Int64,
+                [typeof(ulong?)] = MySqlDbType.UInt64,
+                [typeof(float?)] = MySqlDbType.Float,
+                [typeof(double?)] = MySqlDbType.Double,
+                [typeof(decimal?)] = MySqlDbType.Decimal,
+                [typeof(bool?)] = MySqlDbType.Bit,
+                [typeof(char?)] = MySqlDbType.VarChar,
+                [typeof(Guid?)] = MySqlDbType.Guid,
+                [typeof(DateTime?)] = MySqlDbType.DateTime,
+                [typeof(DateTimeOffset?)] = MySqlDbType.Timestamp
+            };
             return typeMap;
         }
     }

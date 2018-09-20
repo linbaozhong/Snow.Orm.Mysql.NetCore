@@ -26,8 +26,7 @@ namespace Snow.Orm
             set { base[key] = value; }
             get
             {
-                object _val;
-                if (TryGetValue(key, out _val)) return _val;
+                if (TryGetValue(key, out object _val)) return _val;
                 return null;
             }
         }
@@ -92,8 +91,7 @@ namespace Snow.Orm
         /// <returns></returns>
         protected T Get<T>([CallerMemberName]string name = null)
         {
-            object _val;
-            if (TryGetValue(name, out _val))
+            if (TryGetValue(name, out object _val))
             {
                 if (_val == null) return default(T);
                 try { return (T)Convert.ChangeType(_val, typeof(T)); }

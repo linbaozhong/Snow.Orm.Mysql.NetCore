@@ -20,7 +20,7 @@ namespace Snow.Orm
         {
             x._GroupBy = string.Empty;
             x._Having = string.Empty;
-            x._Join.Clear();
+            //x._Join.Clear();
             x._OrderBy.Clear();
             x._SetColumns.Clear();
             Array.Clear(x._Page, 0, x._Page.Length);

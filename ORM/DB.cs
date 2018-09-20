@@ -564,8 +564,7 @@ namespace Snow.Orm
             }
 
             var i = 0;
-            string sqlStr = null;
-            if (SqlDict.TryGetValue(sqlString, out sqlStr))
+            if (SqlDict.TryGetValue(sqlString, out string sqlStr))
             {
                 cmd.SqlString = sqlStr;
                 if (len > 0)

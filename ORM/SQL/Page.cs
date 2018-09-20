@@ -28,7 +28,7 @@ namespace Snow.Orm
                         return $" LIMIT {_offset}, {_Page[1]};";
                 }
             }
-            return " LIMIT 5000;";
+            return " LIMIT 1000;";
         }
         /// <summary>
         /// 分页读取

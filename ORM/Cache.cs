@@ -162,26 +162,26 @@ namespace Snow.Orm
         //void Clean();
     }
 
-    /// <summary>
-    /// 缓存类型
-    /// </summary>
-	public enum CacheTypes
-    {
-        /// <summary>
-        /// 直接读库，不缓存
-        /// </summary>
-        None,
-        /// <summary>
-        /// 来自缓存；缓存中没有就直接读库，并缓存
-        /// </summary>
-        From,
-        /// <summary>
-        /// 直接读库，并缓存
-        /// </summary>
-        To
-        ///// <summary>
-        ///// 仅删除缓存，不获取数据
-        ///// </summary>
-        //Remove
-    }
+    ///// <summary>
+    ///// 缓存类型
+    ///// </summary>
+	//public enum CacheTypes
+ //   {
+ //       /// <summary>
+ //       /// 直接读库，不缓存
+ //       /// </summary>
+ //       None,
+ //       /// <summary>
+ //       /// 来自缓存；缓存中没有就直接读库，并缓存
+ //       /// </summary>
+ //       From,
+ //       /// <summary>
+ //       /// 直接读库，并缓存
+ //       /// </summary>
+ //       To
+ //       ///// <summary>
+ //       ///// 仅删除缓存，不获取数据
+ //       ///// </summary>
+ //       //Remove
+ //   }
 }
