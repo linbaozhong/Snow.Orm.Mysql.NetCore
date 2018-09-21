@@ -33,6 +33,7 @@
     <Compile Remove="Dal.cs" />
     <Compile Remove="dbs.cs" />
     <Compile Remove="SQL\Debug.cs" />
+    <Compile Remove="SQL\Join.cs" />
     <Compile Remove="Utils.cs" />
     <Compile Remove="_Cols.cs" />
     <Compile Remove="_Condition.cs" />
