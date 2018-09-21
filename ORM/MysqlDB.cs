@@ -218,5 +218,25 @@ namespace Snow.Orm
         }
     }
     #endregion
-
+    public partial class Sql
+    {
+        internal string GetPageString()
+        {
+            if (_Page.Length > 1)
+            {
+                var _offset = _Page[0] * _Page[1];
+                if (_offset == 0)
+                {
+                    if (_Page[1] > 0)
+                        return $" LIMIT {_Page[1]};";
+                }
+                else if (_offset > 0)
+                {
+                    if (_Page[1] > 0)
+                        return $" LIMIT {_offset}, {_Page[1]};";
+                }
+            }
+            return " LIMIT 1000;";
+        }
+    }
 }
