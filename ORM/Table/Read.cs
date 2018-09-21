@@ -8,10 +8,7 @@ namespace Snow.Orm
 {
     public partial class Table<T>
     {
-        //static RowLock row_lock = new RowLock();
-        //static CondRowLock condrow_lock = new CondRowLock();
-        //static RowsLock rows_lock = new RowsLock();
-        //static IdsLock ids_lock = new IdsLock();
+        static HashSet<string> _lock = new HashSet<string>();
 
         #region 单个数据对象
         /// <summary>
@@ -38,16 +35,27 @@ namespace Snow.Orm
             if (id < 0) return null;
             T row = null;
             if (RowCache.Get(id, ref row)) return _Get(row, args);
-
-            var row_lock = new object();
-            lock (row_lock)
+            var ck = id.ToString();
+            if (_lock.Contains(ck))
             {
+                System.Threading.Thread.Sleep(5);
                 if (RowCache.Get(id, ref row)) return _Get(row, args);
+            }
+            else
+            {
+                _lock.Add(ck);
+            }
+            try
+            {
                 row = Get(id);
                 if (row == null)
                     RowCache.Add(id, null, 5);
                 else
                     RowCache.Add(id, row);
+            }
+            finally
+            {
+                _lock.Remove(ck);
             }
             return _Get(row, args);
         }
@@ -99,20 +107,29 @@ namespace Snow.Orm
         {
             if (cond == null) { throw new Exception("cond 不能为 NULL"); }
             T row = null;
-            string ck = CombineCacheKey(cond);
+            string ck = "cond_" + CombineCacheKey(cond);
             if (CondRowCache.Get(ck, ref row)) return _Clone(row);
 
-            var row_lock = new object();
-            lock (row_lock)
+            if (_lock.Contains(ck))
             {
+                System.Threading.Thread.Sleep(5);
                 if (CondRowCache.Get(ck, ref row)) return _Clone(row);
-
+            }
+            else
+            {
+                _lock.Add(ck);
+            }
+            try
+            {
                 row = Get(cond);
-
                 if (row == null)
                     CondRowCache.Add(ck, null, 5);
                 else
                     CondRowCache.Add(ck, row);
+            }
+            finally
+            {
+                _lock.Remove(ck);
             }
             return _Clone(row);
         }
@@ -164,20 +181,29 @@ namespace Snow.Orm
         {
             if (bean == null) { throw new Exception("bean 不能为 NULL"); }
             T row = null;
-            string ck = CombineCacheKey(bean);
+            string ck = "t_" + CombineCacheKey(bean);
             if (CondRowCache.Get(ck, ref row)) return _Get(row, args);
 
-            var row_lock = new object();
-            lock (row_lock)
+            if (_lock.Contains(ck))
             {
+                System.Threading.Thread.Sleep(5);
                 if (CondRowCache.Get(ck, ref row)) return _Get(row, args);
-
+            }
+            else
+            {
+                _lock.Add(ck);
+            }
+            try
+            {
                 row = Get(bean);
-
                 if (row == null)
                     CondRowCache.Add(ck, null, 5);
                 else
                     CondRowCache.Add(ck, row);
+            }
+            finally
+            {
+                _lock.Remove(ck);
             }
             return _Get(row, args);
         }
@@ -230,20 +256,29 @@ namespace Snow.Orm
         public T GetCache<V>(string col, V val, params string[] args)
         {
             T row = null;
-            string ck = CombineCacheKey(col, val);
+            string ck = "col_" + CombineCacheKey(col, val);
             if (CondRowCache.Get(ck, ref row)) return _Get(row, args);
 
-            var row_lock = new object();
-            lock (row_lock)
+            if (_lock.Contains(ck))
             {
+                System.Threading.Thread.Sleep(5);
                 if (CondRowCache.Get(ck, ref row)) return _Get(row, args);
-
+            }
+            else
+            {
+                _lock.Add(ck);
+            }
+            try
+            {
                 row = Get(col, val);
-
                 if (row == null)
                     CondRowCache.Add(ck, null, 5);
                 else
                     CondRowCache.Add(ck, row);
+            }
+            finally
+            {
+                _lock.Remove(ck);
             }
             return _Get(row, args);
         }
@@ -459,18 +494,29 @@ namespace Snow.Orm
         public long[] GetCacheIds(Sql cond = null)
         {
             long[] ids = null;
-            string ck = CombineCacheKey(cond);
+            string ck = "ids_" + CombineCacheKey(cond);
             if (ListCache.Get(ck, ref ids)) return ids;
 
-            var row_lock = new object();
-            lock (row_lock)
+            if (_lock.Contains(ck))
             {
+                System.Threading.Thread.Sleep(5);
                 if (ListCache.Get(ck, ref ids)) return ids;
+            }
+            else
+            {
+                _lock.Add(ck);
+            }
+            try
+            {
                 ids = GetIds(cond);
                 if (ids == null)
                     ListCache.Add(ck, null, 5);
                 else
                     ListCache.Add(ck, ids);
+            }
+            finally
+            {
+                _lock.Remove(ck);
             }
             return ids;
         }
@@ -527,18 +573,29 @@ namespace Snow.Orm
         public long[] GetCacheIds<V>(string col, V val, string orderby = null, uint count = 1000)
         {
             long[] ids = null;
-            string ck = CombineCacheKey(col, val, orderby, count);
+            string ck = "ids_" + CombineCacheKey(col, val, orderby, count);
             if (ListCache.Get(ck, ref ids)) return ids;
 
-            var row_lock = new object();
-            lock (row_lock)
+            if (_lock.Contains(ck))
             {
+                System.Threading.Thread.Sleep(5);
                 if (ListCache.Get(ck, ref ids)) return ids;
+            }
+            else
+            {
+                _lock.Add(ck);
+            }
+            try
+            {
                 ids = GetIds(col, val, orderby, count);
                 if (ids == null)
                     ListCache.Add(ck, null, 5);
                 else
                     ListCache.Add(ck, ids);
+            }
+            finally
+            {
+                _lock.Remove(ck);
             }
             return ids;
         }
@@ -587,18 +644,29 @@ namespace Snow.Orm
         public long[] GetCacheIds(string orderby = null, uint count = 1000)
         {
             long[] ids = null;
-            string ck = CombineCacheKey(orderby, count);
+            string ck = "ids_" + CombineCacheKey(orderby, count);
             if (ListCache.Get(ck, ref ids)) return ids;
 
-            var row_lock = new object();
-            lock (row_lock)
+            if (_lock.Contains(ck))
             {
+                System.Threading.Thread.Sleep(5);
                 if (ListCache.Get(ck, ref ids)) return ids;
+            }
+            else
+            {
+                _lock.Add(ck);
+            }
+            try
+            {
                 ids = GetIds(orderby, count);
                 if (ids == null)
                     ListCache.Add(ck, null, 5);
                 else
                     ListCache.Add(ck, ids);
+            }
+            finally
+            {
+                _lock.Remove(ck);
             }
             return ids;
         }
@@ -654,16 +722,27 @@ namespace Snow.Orm
             if (bean == null) { throw new Exception("bean 不能为 NULL"); }
 
             long[] ids = null;
-            string ck = CombineCacheKey(bean, orderby, count);
+            string ck = "ids_" + CombineCacheKey(bean, orderby, count);
             if (ListCache.Get(ck, ref ids)) return ids;
 
-            var row_lock = new object();
-            lock (row_lock)
+            if (_lock.Contains(ck))
             {
+                System.Threading.Thread.Sleep(5);
                 if (ListCache.Get(ck, ref ids)) return ids;
+            }
+            else
+            {
+                _lock.Add(ck);
+            }
+            try
+            {
                 ids = GetIds(bean, orderby, count);
                 if (ids == null) ListCache.Add(ck, null, 5);
                 else ListCache.Add(ck, ids);
+            }
+            finally
+            {
+                _lock.Remove(ck);
             }
             return ids;
         }
@@ -884,21 +963,4 @@ namespace Snow.Orm
         }
         #endregion
     }
-
-    //public class RowLock
-    //{
-    //    public long key { set; get; }
-    //}
-    //public class CondRowLock
-    //{
-    //    public string key { set; get; }
-    //}
-    //public class RowsLock
-    //{
-    //    public string key { set; get; }
-    //}
-    //public class IdsLock
-    //{
-    //    public string key { set; get; }
-    //}
 }
