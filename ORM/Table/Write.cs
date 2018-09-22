@@ -120,7 +120,7 @@ namespace Snow.Orm
         /// 原生UPDATE
         /// </summary>
         /// <param name="id">主键值</param>
-        /// <param name="setString">SET字符串,"a=? and b=?"</param>
+        /// <param name="setString">SET字符串,"a=?,b=?"</param>
         /// <param name="args">?对应的参数值</param>
         /// <returns></returns>
         public DalResult Update(long id, string setString, params object[] args)
@@ -219,6 +219,7 @@ namespace Snow.Orm
             if (val == 0) return DalResult.Factory;
             return IncrDecr(id, col, val, "-");
         }
+
         DalResult IncrDecr(long id, string col, int val, string op = "+")
         {
             string sql = null;
