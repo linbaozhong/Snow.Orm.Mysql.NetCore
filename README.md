@@ -113,7 +113,7 @@ namespace Api.Mds
 ```
 ### Update
 Update操作包含4个方法:
-1 使用实例化对象更新多个字段.注意,这个方法必须要为对象的主键ID进行赋值
+1. 使用实例化对象更新多个字段.注意,这个方法必须要为对象的主键ID进行赋值
 ```c#
     // 修改一个用户的手机号码
     var u = new Mds.Users();  // 实例化
@@ -126,7 +126,7 @@ Update操作包含4个方法:
         Console.WriteLine($"用户ID{u.ID}的新手机号码:{u.Mobile}");
     }
 ```
-2 使用主键ID值和实例化对象更新多个字段.
+2. 使用主键ID值和实例化对象更新多个字段.
 ```c#
     // 修改一个用户的手机号码
     var u = new Mds.Users();  // 实例化
@@ -138,7 +138,7 @@ Update操作包含4个方法:
         Console.WriteLine($"用户的新手机号码:{u.Mobile}");
     }
 ```
-3 使用主键ID值更新1个字段.
+3. 使用主键ID值更新1个字段.
 ```c#
     // 修改用户ID为123的手机号码
     // 所有的写操作都会返回一个DalResult对象{Success=true或false,Id=自增ID,Rows=受影响的行数}
@@ -148,7 +148,7 @@ Update操作包含4个方法:
         Console.WriteLine($"用户的手机号码更新失败");
     }
 ```
-4 指定字段递增/递减.
+4. 指定字段递增/递减.
 ```c#
     // 用户ID为123的登录次数递增1次
     var result = Mds.Users.Table.Incr(123,nameof(Mds.Users.LoginTimes));
@@ -163,7 +163,7 @@ Update操作包含4个方法:
         Console.WriteLine($"失败");
     }
 ```
-5 复杂条件的字段更新.
+5. 复杂条件的字段更新.
 ```c#
     // 将全部登录次数大于等于10的用户的CreateTime修改为当前时间
     var result = Mds.Users.Table.Update(Snow.Orm.Sql.Factory
@@ -175,7 +175,7 @@ Update操作包含4个方法:
         Console.WriteLine($"更新失败");
     }
 ```
-6 使用原生SQL字符串更新字段.
+6. 使用原生SQL字符串更新字段.
 ```c#
     // 更新用户id=123的部分字段
     var result = Mds.Users.Table.Update(123,$"{nameof(Mds.Users.LoginTimes)}=?,{nameof(Mds.Users.CreateTime)}=?",10,DateTime.Now);
