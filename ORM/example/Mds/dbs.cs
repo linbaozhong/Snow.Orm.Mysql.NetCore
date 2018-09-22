@@ -13,7 +13,7 @@ namespace Api
             log4net.Config.XmlConfigurator.Configure(repository, fileInfo);
             log4net.Config.BasicConfigurator.Configure(repository);
             Log = log4net.LogManager.GetLogger(repository.Name, "NETCorelog4net");
-            Db = new Snow.Orm.DB("Server=localhost;Database=snow_shop;Uid=root;Pwd=123456;Max Pool Size=50;", 0, Log, true);
+            Db = new Snow.Orm.DB("Server=localhost;Database=snow_shop;Uid=root;Pwd=123456;Max Pool Size=50;", 0, Log);
         }
     }
 }

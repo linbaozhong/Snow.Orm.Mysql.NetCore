@@ -66,7 +66,7 @@ namespace Snow.Orm
             }
             return mess.ToString();
         }
-        public bool IsDebug { private set; get; }
+        //public bool IsDebug { private set; get; }
         private uint TimeOut = 0;       //数据库连接超时，单位秒，默认0表示由系统控制
         private string ReadConnStr = null;  //数据库读连接字符串
         public string WriteConnStr = null;	//数据库写连接字符串
@@ -78,7 +78,7 @@ namespace Snow.Orm
         /// <param name="connstr">数据库连接字符串</param>
         /// <param name="timeout">超时</param>
         /// <param name="isdebug">是否调试</param>
-		public DB(string connstr, uint timeout = 0, log4net.ILog log = null, bool isdebug = false)
+		public DB(string connstr, uint timeout = 0, log4net.ILog log = null)
         {
             if (connstr == null || connstr.Length < 10)
             {
@@ -88,7 +88,7 @@ namespace Snow.Orm
             WriteConnStr = connstr;
 
             Log = log;
-            IsDebug = isdebug;
+            //IsDebug = isdebug;
             if (timeout > 0) this.TimeOut = timeout;
         }
         /// <summary>
@@ -97,7 +97,7 @@ namespace Snow.Orm
         /// <param name="readconnstr"></param>
         /// <param name="writeconnstr"></param>
         /// <param name="timeout"></param>
-		public DB(string readconnstr, string writeconnstr, uint timeout = 0, log4net.ILog log = null, bool isdebug = false)
+		public DB(string readconnstr, string writeconnstr, uint timeout = 0, log4net.ILog log = null)
         {
             if (readconnstr == null || readconnstr.Length < 10)
             {
@@ -106,7 +106,7 @@ namespace Snow.Orm
             ReadConnStr = readconnstr;
             WriteConnStr = writeconnstr;
             Log = log;
-            IsDebug = isdebug;
+            //IsDebug = isdebug;
             if (this.WriteConnStr == null || this.WriteConnStr.Length < 3) this.WriteConnStr = this.ReadConnStr;
             if (timeout > 0) this.TimeOut = timeout;
         }
