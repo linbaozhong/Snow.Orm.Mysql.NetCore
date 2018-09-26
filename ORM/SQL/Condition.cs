@@ -16,7 +16,7 @@ namespace Snow.Orm
         /// <summary>
         /// 原生条件字符串
         /// </summary>
-        /// <param name="sqlString"> and id=? or name=?</param>
+        /// <param name="sqlString">id=? or name=?</param>
         /// <param name="args"></param>
         /// <returns></returns>
         public Sql Where(string sqlString, params object[] args)
