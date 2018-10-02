@@ -90,8 +90,7 @@ namespace Snow.Orm
             if (id == 0) { throw new Ex("id = 0 错误", Ex.BadParameter); }
             if (bean == null) { throw new Ex("bean 不能为 NULL", Ex.Null); }
             if (bean.Count < 1) { throw new Ex("缺少更新字段", Ex.Null); }
-            //var _old = GetCache(id);
-            //if (_old == null) { throw new Ex("目标数据不存在", Ex.NotFound); }
+            if (!Exists(id)) { throw new Ex("目标数据不存在", Ex.NotFound); }
 
             var _SetColumns = new List<string>();
             var _Params = new List<DbParameter>();
@@ -125,7 +124,9 @@ namespace Snow.Orm
         /// <returns></returns>
         public DalResult Update(long id, string setString, params object[] args)
         {
+            if (id == 0) { throw new Ex("id = 0 错误", Ex.BadParameter); }
             if (string.IsNullOrWhiteSpace(setString)) { throw new Ex("数据库操作命令不能为空", Ex.BadParameter); }
+            if (!Exists(id)) { throw new Ex("目标数据不存在", Ex.NotFound); }
             var sql = new StringBuilder(200);
             sql.Append("UPDATE " + TableString);
             if (!setString.Trim().StartsWith("SET ", StringComparison.CurrentCultureIgnoreCase)) sql.Append(" SET ");
@@ -151,7 +152,9 @@ namespace Snow.Orm
         /// <returns></returns>
         public DalResult Update<V>(long id, string col, V val)
         {
+            if (id == 0) { throw new Ex("id = 0 错误", Ex.BadParameter); }
             if (val == null || string.IsNullOrWhiteSpace(col)) { throw new Ex("参数不能为 NULL", Ex.BadParameter); }
+            if (!Exists(id)) { throw new Ex("目标数据不存在", Ex.NotFound); }
 
             DbParameter _Param = null;
             string sql = null;
@@ -222,6 +225,7 @@ namespace Snow.Orm
 
         DalResult IncrDecr(long id, string col, int val, string op = "+")
         {
+            if (!Exists(id)) { throw new Ex("目标数据不存在", Ex.NotFound); }
             string sql = null;
             if (_ColumnDictionary.ContainsKey(col))
             {
@@ -245,6 +249,8 @@ namespace Snow.Orm
         /// <returns></returns>
         public DalResult Delete(long id)
         {
+            if (id == 0) { throw new Ex("id = 0 错误", Ex.BadParameter); }
+            if (!Exists(id)) { throw new Ex("目标数据不存在", Ex.NotFound); }
             var sql = "DELETE FROM " + TableString + $" WHERE {DB.GetName("ID")}={id};";
             var result = Db.Write(_Session, sql);
             if (result.Success)
